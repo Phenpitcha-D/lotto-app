@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lotto_app/pages/login.dart';
-import 'package:lotto_app/pages/register.dart';
 
 void main() {
   runApp(const MyApp());
@@ -21,7 +20,7 @@ class MyApp extends StatelessWidget {
         ),
         textTheme: GoogleFonts.sarabunTextTheme(),
       ),
-      home: Register(),
+      home: Login(),
     );
   }
 }
