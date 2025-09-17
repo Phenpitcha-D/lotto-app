@@ -3,9 +3,11 @@ import 'package:http/http.dart' as http;
 import 'package:lotto_app/config/config.dart';
 import 'package:lotto_app/materials/lottoCard.dart';
 import 'package:lotto_app/model/response/lottolist_res.dart';
+import 'package:lotto_app/model/response/user_login_post_res.dart';
 
 class LottolistPage extends StatefulWidget {
-  const LottolistPage({super.key});
+  final UserLoginRespon currentUser;
+  const LottolistPage({super.key, required this.currentUser});
 
   @override
   State<LottolistPage> createState() => _LottolistPageState();
@@ -117,6 +119,8 @@ class _LottolistPageState extends State<LottolistPage> {
                       number: filtered[i].lottoNumber,
                       price: filtered[i].price,
                       imageAsset: "assets/images/lotto_pool.png",
+                      lid: filtered[i].lid,
+                      token: widget.currentUser.token,
                     );
                   }),
                 );
