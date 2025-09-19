@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:lotto_app/config/config.dart';
@@ -190,57 +189,31 @@ class _LottolistAdminPageState extends State<LottolistAdminPage> {
   }
 
   Future<void> CreateLotto() async {
-    try {
-      final amount = int.tryParse(_amountController.text);
-      final price = int.tryParse(_priceController.text);
+    LottoReleaseRequest request = LottoReleaseRequest(
+      count: int.parse(_amountController.text),
+      price: int.parse(_priceController.text),
+    );
+    final res = await http.post(
+      Uri.parse("$url/api/lottos/release"),
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Authorization": "Bearer ${widget.currentUser.token}",
+      },
+      body: jsonEncode(request.toJson()),
+    );
 
-      if (amount == null || amount <= 0 || price == null || price <= 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('กรุณากรอกจำนวน/ราคาให้ถูกต้อง')),
-        );
-        return;
-      }
-
-      // ✅ สร้างลิสต์ลอตเตอรี่
-      final lottoList = List<Lotto>.generate(
-        amount,
-        (_) => Lotto(lottoNumber: generateRandomLottoNumber(), price: price),
+    if (res.statusCode >= 200 && res.statusCode < 300) {
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MainScaffold(currentUser: widget.currentUser),
+        ),
       );
-
-      final request = LottoReleaseRequest(lottos: lottoList);
-
-      final res = await http.post(
-        Uri.parse("$url/api/lottos/release"),
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-          "Authorization": "Bearer ${widget.currentUser.token}",
-        },
-        body: jsonEncode(request.toJson()), // ✅ ต้องเป็น toJson()
-      );
-
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        if (!mounted) return;
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => MainScaffold(currentUser: widget.currentUser),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('API error: ${res.statusCode}')));
-      }
-    } catch (e) {
+    } else {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('เกิดข้อผิดพลาด: $e')));
+      ).showSnackBar(SnackBar(content: Text('API error: ${res.statusCode}')));
     }
-  }
-
-  // ✅ ฟังก์ชันสุ่มเลข 6 หลัก (มีศูนย์นำหน้าได้)
-  String generateRandomLottoNumber() {
-    final r = Random();
-    return r.nextInt(1000000).toString().padLeft(6, '0');
   }
 }
