@@ -159,7 +159,10 @@ class _LottoCardState extends State<LottoCard> {
                                       ),
                                     ),
                                     FilledButton(
-                                      onPressed: LottoBuy,
+                                      onPressed: () {
+                                        LottoBuy();
+                                        Navigator.of(context).pop();
+                                      },
                                       style: FilledButton.styleFrom(
                                         backgroundColor: const Color(
                                           0xFF2196F3,

@@ -6,6 +6,8 @@ import 'package:lotto_app/config/config.dart';
 import 'package:lotto_app/model/response/reward_get_res.dart';
 import 'package:lotto_app/model/response/user_login_post_res.dart';
 import 'package:lotto_app/model/response/user_orderrecord_get_res.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 /// 🎨 โทนสีพื้นหลังแผงใหญ่
 class AppColors {
@@ -37,6 +39,7 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
   @override
   void initState() {
     super.initState();
+    initializeDateFormatting('th_TH');
     loadReward = RewardResult();
     loadData = LoadOrdersRecord();
   }
@@ -95,7 +98,7 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 5),
                       const Center(
                         child: Text(
                           'รางวัลที่ 1',
@@ -105,18 +108,22 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 5),
                       _PrizeLargeCard(
                         cream: _cream,
                         creamBorder: _creamBorder,
                         redStripe: _redStripe,
                         warnText: _warnText,
-                        number: data.results[0].lottoNumber,
-                        prizeText: '*รางวัลละ ${data.results[0].bounty} บาท',
+                        number:
+                            data.results.elementAtOrNull(0)?.lottoNumber ?? '',
+                        prizeText:
+                            data.results.elementAtOrNull(0)?.bounty != null
+                            ? '*รางวัลละ ${data.results.elementAtOrNull(0)!.bounty} บาท'
+                            : '',
                         leftAsset: _leftAsset,
                         rightAsset: _rightAsset,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 10),
                       Row(
                         children: [
                           Expanded(
@@ -141,7 +148,7 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 10),
                           Expanded(
                             child: _PrizeColumn(
                               title: 'รางวัลที่ 3',
@@ -166,7 +173,7 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       Row(
                         children: [
                           Expanded(
@@ -194,7 +201,7 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: _PrizeColumn(
-                              title: 'รางวัลเลขท้าย 3 ตัว',
+                              title: 'รางวัลเลขท้าย 2 ตัว',
                               card: _PrizeSmallCard(
                                 cream: _cream,
                                 creamBorder: _creamBorder,
@@ -234,7 +241,7 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                   ),
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 0),
 
                 // ====== สลากของฉัน ======
                 Container(
@@ -283,34 +290,37 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                           return Column(
                             children: [
                               for (var i = 0; i < items.length; i += 2)
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: _MyTicketCard(
-                                        cream: _cream,
-                                        creamBorder: _creamBorder,
-                                        redStripe: _redStripe,
-                                        number: items[i].lottoNumber,
-                                        price: items[i].purchasePrice,
-                                        purchasedAt: items[i].purchaseTime,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    if (i + 1 < items.length)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: Row(
+                                    children: [
                                       Expanded(
                                         child: _MyTicketCard(
                                           cream: _cream,
                                           creamBorder: _creamBorder,
                                           redStripe: _redStripe,
-                                          number: items[i + 1].lottoNumber,
-                                          price: items[i + 1].purchasePrice,
-                                          purchasedAt:
-                                              items[i + 1].purchaseTime,
+                                          number: items[i].lottoNumber,
+                                          price: items[i].purchasePrice,
+                                          purchasedAt: items[i].purchaseTime,
                                         ),
-                                      )
-                                    else
-                                      const Expanded(child: SizedBox()),
-                                  ],
+                                      ),
+                                      const SizedBox(width: 12),
+                                      if (i + 1 < items.length)
+                                        Expanded(
+                                          child: _MyTicketCard(
+                                            cream: _cream,
+                                            creamBorder: _creamBorder,
+                                            redStripe: _redStripe,
+                                            number: items[i + 1].lottoNumber,
+                                            price: items[i + 1].purchasePrice,
+                                            purchasedAt:
+                                                items[i + 1].purchaseTime,
+                                          ),
+                                        )
+                                      else
+                                        const Expanded(child: SizedBox()),
+                                    ],
+                                  ),
                                 ),
                             ],
                           );
@@ -588,18 +598,18 @@ class _MyTicketCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  _circleIcon(56),
+                  _circleIcon(46),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _PillText(number, fontSize: 16, padV: 6),
-                        const SizedBox(height: 6),
+                        _PillText(number, fontSize: 11, padV: 6),
+                        const SizedBox(height: 5),
                         Text('ราคา : ${price.toString()} บาท'),
                         const SizedBox(height: 2),
                         Text(
-                          'ซื้อเมื่อ: ${(purchasedAt)}',
+                          'ซื้อเมื่อ: ${formatDateThai(purchasedAt)}',
                           style: const TextStyle(
                             fontSize: 12,
                             color: Colors.grey,
@@ -614,9 +624,7 @@ class _MyTicketCard extends StatelessWidget {
               SizedBox(
                 height: 30,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // TODO: ตรวจรางวัล
-                  },
+                  onPressed: CheckReward,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFF28C2D),
                     foregroundColor: Colors.white,
@@ -650,6 +658,36 @@ class _MyTicketCard extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  void CheckReward() async {
+    // var config = await Configuration.getConfig();
+    // var url = config['apiEndpoint'];
+    // var uid = widget.currentUser.user.uid;
+    // var uri = Uri.parse('$url/api/orders/$uid');
+    // var res = await http.get(
+    //   uri,
+    //   headers: {
+    //     "Content-Type": "application/json; charset=utf-8",
+    //     "Authorization": "Bearer ${widget.currentUser.token}",
+    //   },
+    // );
+
+    // if (res.statusCode == 200) {
+    //   return userOrdersRecordResponseFromJson(res.body);
+    // } else {
+    //   debugPrint('GET $uri -> ${res.statusCode}\n${res.body}');
+    //   throw Exception("โหลดข้อมูลไม่สำเร็จ: ${res.statusCode}");
+    // }
+  }
+
+  formatDateThai(String iso) {
+    try {
+      final dt = DateTime.parse(iso).toLocal();
+      return DateFormat("dd MMM yyyy - HH:mm", "th_TH").format(dt);
+    } catch (_) {
+      return iso;
+    }
   }
 }
 

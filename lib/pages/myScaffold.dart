@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lotto_app/model/response/user_login_post_res.dart';
+import 'package:lotto_app/pages/login.dart';
 
 /// 🎨 โทนสีตรงดีไซน์
 class AppColors {
@@ -257,7 +258,11 @@ class _MyscaffoldState extends State<Myscaffold> {
   }
 
   void Logout() {
-    Navigator.pop(context);
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => Login()),
+      (Route<dynamic> route) => false,
+    );
   }
 }
 
