@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:lotto_app/model/response/user_login_post_res.dart';
-import 'package:lotto_app/pages/login.dart';
 
 /// 🎨 โทนสีตรงดีไซน์
 class AppColors {
