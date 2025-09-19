@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lotto_app/config/config.dart';
 import 'package:lotto_app/model/request/user_register_post_req.dart';
-import 'package:lotto_app/model/response/user_register_post_res.dart';
 import 'package:lotto_app/pages/login.dart';
 import 'package:http/http.dart' as http;
 
