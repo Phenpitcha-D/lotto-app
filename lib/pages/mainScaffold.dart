@@ -26,12 +26,11 @@ class _MainScaffoldState extends State<MainScaffold> {
     super.initState();
     walletVN = ValueNotifier<int>(widget.currentUser.user.wallet);
   }
-  
 
   Widget _buildChild(String role) {
     if (_tab == 0) {
       if (role == 'admin') {
-        return ChecklottoAdmin();
+        return ChecklottoAdmin(currentUser: widget.currentUser);
       } else {
         return CheckLottoPage(currentUser: widget.currentUser);
       }
