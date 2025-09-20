@@ -22,7 +22,7 @@ class _MainScaffoldState extends State<MainScaffold> {
   Widget _buildChild(String role) {
     if (_tab == 0) {
       if (role == 'admin') {
-        return ChecklottoAdmin();
+        return ChecklottoAdmin(currentUser: widget.currentUser,);
       } else {
         return CheckLottoPage(currentUser: widget.currentUser);
       }

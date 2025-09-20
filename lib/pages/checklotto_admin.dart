@@ -1,7 +1,20 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'dart:math';
+
+import 'package:http/http.dart' as http;
+import 'package:lotto_app/config/config.dart';
+import 'package:lotto_app/model/response/reward_get_res.dart';
+import 'package:lotto_app/model/response/user_login_post_res.dart';
+
+
 
 class ChecklottoAdmin extends StatefulWidget {
-  const ChecklottoAdmin({super.key});
+
+  final UserLoginRespon currentUser;
+
+  const ChecklottoAdmin({super.key, required this.currentUser});
 
   @override
   State<ChecklottoAdmin> createState() => _ChecklottoAdminState();
@@ -172,6 +185,7 @@ class _RewardActionBar extends StatefulWidget {
   State<_RewardActionBar> createState() => _RewardActionBarState();
 }
 
+//new for test
 class _RewardActionBarState extends State<_RewardActionBar> {
   final List<String> _modes = const [
     'เลือกการสุ่มรางวัล',
@@ -179,6 +193,8 @@ class _RewardActionBarState extends State<_RewardActionBar> {
     'สุ่มจากลอตเตอรี่ทั้งหมด',
   ];
   String _selected = 'เลือกการสุ่มรางวัล';
+
+  LottoResult? _result;
 
   @override
   Widget build(BuildContext context) {
@@ -192,80 +208,37 @@ class _RewardActionBarState extends State<_RewardActionBar> {
         ),
         const SizedBox(height: 12),
 
+        //random reward 
         FilledButton(
           style: FilledButton.styleFrom(
             backgroundColor: const Color(0xFFD84C43),
             foregroundColor: Colors.white,
             shape: const StadiumBorder(),
-            elevation: 0,
             padding: const EdgeInsets.symmetric(vertical: 12),
           ),
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  backgroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    side: const BorderSide(
-                      color: Color(0xFF2196F3),
-                      width: 1.5,
-                    ),
-                  ),
-                  content: const Text(
-                    "ยืนยันที่จะทำการสุ่มรางวัล ? เมื่อกดยืนยันแล้วจะไม่สามารถแก้ไขได้",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  actionsAlignment: MainAxisAlignment.spaceEvenly,
-                  actions: [
-                    FilledButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFFCF3030),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                      ),
-                      child: const Text(
-                        "ยกเลิก",
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ),
-                    FilledButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('สุ่มด้วยโหมด: $_selected')),
-                        );
-                      },
-                      style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF2196F3),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                      ),
-                      child: const Text(
-                        "ยืนยัน",
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            );
+          onPressed: () async {
+            if (_selected == _modes.first) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('กรุณาเลือกโหมดการสุ่มก่อน')),
+              );
+              return;
+            }
+
+            // try {
+            //   // 🔹 เรียก API แทน mock
+            //   final result = await LottoApiService.draw(_selected);
+            //   setState(() => _result = result);
+
+            //   ScaffoldMessenger.of(context).showSnackBar(
+            //     SnackBar(
+            //       content: Text('สุ่มสำเร็จ! รางวัลที่ 1: ${result.prize1}'),
+            //     ),
+            //   );
+            // } catch (e) {
+            //   ScaffoldMessenger.of(
+            //     context,
+            //   ).showSnackBar(SnackBar(content: Text('เกิดข้อผิดพลาด: $e')));
+            // }
           },
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -278,29 +251,44 @@ class _RewardActionBarState extends State<_RewardActionBar> {
         ),
 
         const SizedBox(height: 10),
+        // reset fill
+        // FilledButton(
+        //   style: FilledButton.styleFrom(
+        //     backgroundColor: const Color.fromARGB(255, 255, 196, 0),
+        //     foregroundColor: Colors.white,
+        //     shape: const StadiumBorder(),
+        //     padding: const EdgeInsets.symmetric(vertical: 12),
+        //   ),
+        //   onPressed: () async {
+        //     await MockLottoApi.resetSystem();
+        //     setState(() => _result = null);
+        //     ScaffoldMessenger.of(context).showSnackBar(
+        //       const SnackBar(content: Text('รีเซ็ตระบบเรียบร้อย')),
+        //     );
+        //   },
+        //   child: const Row(
+        //     mainAxisAlignment: MainAxisAlignment.center,
+        //     children: [
+        //       Icon(Icons.refresh, size: 18),
+        //       SizedBox(width: 8),
+        //       Text('รีเซ็ตระบบ', style: TextStyle(fontWeight: FontWeight.w600)),
+        //     ],
+        //   ),
+        // ),
 
-        FilledButton(
-          style: FilledButton.styleFrom(
-            backgroundColor: const Color.fromARGB(255, 255, 196, 0),
-            foregroundColor: Colors.white,
-            shape: const StadiumBorder(),
-            elevation: 0,
-            padding: const EdgeInsets.symmetric(vertical: 12),
-          ),
-          onPressed: () {},
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.refresh, size: 18),
-              SizedBox(width: 8),
-              Text('รีเซ็ตระบบ', style: TextStyle(fontWeight: FontWeight.w600)),
-            ],
-          ),
-        ),
+        // แสดงผลรางวัลที่สุ่มได้ (Debug View)
+        if (_result != null) ...[
+          const SizedBox(height: 16),
+          Text("รางวัลที่ 1: ${_result!.prize1}"),
+          Text("รางวัลที่ 2: ${_result!.prize2.join(', ')}"),
+          Text("รางวัลที่ 3: ${_result!.prize3.join(', ')}"),
+          Text("เลขท้าย 3 ตัว: ${_result!.last3Digits}"),
+          Text("เลขท้าย 2 ตัว: ${_result!.last2Digits}"),
+        ],
       ],
     );
   }
-}
+} //new for test
 
 // ดรอปดาวน์
 class _ActionDropdownPill extends StatelessWidget {
@@ -819,4 +807,75 @@ class _DashedLine extends StatelessWidget {
       );
     },
   );
+}
+
+class LottoApiService {
+  // static const String baseUrl =
+  //     "https://lotto888db.onrender.com/api/lottos/"; // edit now
+
+  // static Future<LottoResult> draw(String mode) async {
+  //   String endpoint;
+  //   if (mode == 'สุ่มจากลอตเตอรี่ที่ขายไปแล้ว') {
+  //     endpoint = "$baseUrl/draw/purchased";
+  //   } else {
+  //     endpoint = "$baseUrl/draw/all";
+  //   }
+
+  //   final res = await http.get(Uri.parse(endpoint));
+  //   if (res.statusCode == 200) {
+  //     final data = jsonDecode(res.body);
+
+  //     return LottoResult(
+  //       prize1: data['prize1'],
+  //       prize2: List<String>.from(data['prize2']),
+  //       prize3: List<String>.from(data['prize3']),
+  //       last3Digits: data['last3Digits'],
+  //       last2Digits: data['last2Digits'],
+  //     );
+  //   } else {
+  //     throw Exception("API error: ${res.statusCode}");
+  //   }
+  static Future<LottoResult> (dynamic widget) async {
+    var config = await Configuration.getConfig();
+    
+    var url = config['apiEndpoint'];
+    var uri = Uri.parse('$url/api/lottos/draw/all');
+    var res = await http.get(
+      uri,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Authorization": "Bearer ${widget.currentUser.token}", //widget.currentUser.user.uid
+      },
+    );
+
+    if (res.statusCode == 200) {
+      log(1);
+      return rewardResultResponseFromJson(res.body);
+    } else {
+      debugPrint('GET $uri -> ${res.statusCode}\n${res.body}');
+      throw Exception("โหลดข้อมูลไม่สำเร็จ: ${res.statusCode}");
+    }
+  }
+
+  // static Future<void> resetSystem() async {
+  //   // ถ้า backend มี reset endpoint ก็เรียกตรงนี้
+  //   // ถ้าไม่มี ลบปุ่มรีเซ็ตทิ้งได้เลย
+  // }
+}
+
+// ผลลัพธ์ของการสุ่มรางวัล
+class LottoResult {
+  final String prize1;
+  final List<String> prize2;
+  final List<String> prize3;
+  final String last3Digits;
+  final String last2Digits;
+
+  LottoResult({
+    required this.prize1,
+    required this.prize2,
+    required this.prize3,
+    required this.last3Digits,
+    required this.last2Digits,
+  });
 }
