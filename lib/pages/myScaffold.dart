@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:lotto_app/model/response/user_login_post_res.dart';
 import 'package:lotto_app/pages/login.dart';
+import 'package:intl/intl.dart';
 
 /// 🎨 โทนสีตรงดีไซน์
 class AppColors {
@@ -24,8 +25,8 @@ class Myscaffold extends StatefulWidget {
     this.child,
     this.currentIndex = 1,
     this.onNav,
-    required this.currentUser, required this.walletVN,
-
+    required this.currentUser,
+    required this.walletVN,
   });
 
   @override
@@ -149,7 +150,7 @@ class _MyscaffoldState extends State<Myscaffold> {
                           ValueNotifier(widget.currentUser.user.wallet),
                       builder: (_, bal, __) {
                         return Text(
-                          '\$ $bal',
+                          formatBalance(bal),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
@@ -329,3 +330,8 @@ class _BottomOverhangItem extends StatelessWidget {
     );
   }
 }
+
+  String formatBalance(int amount) {
+    final nf = NumberFormat("#,###", "th_TH");
+    return '${nf.format(amount.toDouble())}';
+  }

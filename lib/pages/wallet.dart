@@ -17,8 +17,11 @@ class WalletPage extends StatefulWidget {
   final UserLoginRespon currentUser;
 
   final ValueNotifier<int> walletVN;
-  const WalletPage({super.key, required this.currentUser, required this.walletVN, });
-  
+  const WalletPage({
+    super.key,
+    required this.currentUser,
+    required this.walletVN,
+  });
 
   @override
   State<WalletPage> createState() => _WalletPageState();
@@ -89,9 +92,11 @@ class _WalletPageState extends State<WalletPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        '$currentBalance บาท',
-                        style: TextStyle(fontSize: 36),
+                      Expanded(
+                        child: Text(
+                          formatBalance(currentBalance),
+                          style: TextStyle(fontSize: 36),
+                        ),
                       ),
                     ],
                   ),
@@ -403,6 +408,12 @@ class _WalletPageState extends State<WalletPage> {
     final nf = NumberFormat("#,##0.00", "th_TH");
     return "${isCredit ? '+' : '-'}${nf.format(amount.toDouble())}";
     // NOTE: ถ้าฐานข้อมูลใช้ทศนิยม ให้ปรับ model/จำนวนเงินให้สอดคล้อง
+  }
+
+  // แปลง 1000 เป็น 1,000.00 บาท
+  String formatBalance(int amount) {
+    final nf = NumberFormat("#,###", "th_TH");
+    return '${nf.format(amount.toDouble())} บาท';
   }
 
   String formatDateThai(String iso) {
