@@ -15,7 +15,10 @@ import 'package:intl/date_symbol_data_local.dart';
 
 class WalletPage extends StatefulWidget {
   final UserLoginRespon currentUser;
-  const WalletPage({super.key, required this.currentUser});
+
+  final ValueNotifier<int> walletVN;
+  const WalletPage({super.key, required this.currentUser, required this.walletVN, });
+  
 
   @override
   State<WalletPage> createState() => _WalletPageState();
@@ -543,6 +546,7 @@ class _WalletPageState extends State<WalletPage> {
             currentBalance = transRes.newBalance;
             widget.currentUser.user.wallet = transRes.newBalance; // <- สำคัญ
           });
+          widget.walletVN?.value = transRes.newBalance;
         }
       } catch (_) {}
 
@@ -684,6 +688,7 @@ class _WalletPageState extends State<WalletPage> {
             currentBalance = transRes.newBalance;
             widget.currentUser.user.wallet = transRes.newBalance; // <- สำคัญ
           });
+          widget.walletVN?.value = transRes.newBalance;
         }
       } catch (_) {}
 
@@ -847,6 +852,7 @@ class _WalletPageState extends State<WalletPage> {
             currentBalance = newBal!;
             widget.currentUser.user.wallet = newBal!; // <- สำคัญ
           });
+          widget.walletVN?.value = newBal;
         }
       } catch (_) {}
 
