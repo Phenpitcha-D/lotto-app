@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:lotto_app/model/response/user_login_post_res.dart';
 import 'package:lotto_app/pages/login.dart';
@@ -15,6 +16,7 @@ class Myscaffold extends StatefulWidget {
   final int currentIndex; // 0=ตรวจรางวัล, 1=ล็อตโต้, 2=วอลเล็ต
   final void Function(int index)? onNav;
   final UserLoginRespon currentUser;
+  final ValueNotifier<int> walletVN;
 
   const Myscaffold({
     super.key,
@@ -22,7 +24,8 @@ class Myscaffold extends StatefulWidget {
     this.child,
     this.currentIndex = 1,
     this.onNav,
-    required this.currentUser,
+    required this.currentUser, required this.walletVN,
+
   });
 
   @override
@@ -140,13 +143,20 @@ class _MyscaffoldState extends State<Myscaffold> {
                       color: Colors.black87,
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      '\$ ${widget.currentUser.user.wallet}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black87,
-                      ),
+                    ValueListenableBuilder<int>(
+                      valueListenable:
+                          widget.walletVN ??
+                          ValueNotifier(widget.currentUser.user.wallet),
+                      builder: (_, bal, __) {
+                        return Text(
+                          '\$ $bal',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black87,
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

@@ -19,6 +19,15 @@ class _MainScaffoldState extends State<MainScaffold> {
   int _tab = 1; //หน้าล็อตโต้
   String _titleName = "Lotto";
 
+  late final ValueNotifier<int> walletVN; //ใช้อัพเดตค่า แบบ Real ไทม์เด้
+
+  @override
+  void initState() {
+    super.initState();
+    walletVN = ValueNotifier<int>(widget.currentUser.user.wallet);
+  }
+  
+
   Widget _buildChild(String role) {
     if (_tab == 0) {
       if (role == 'admin') {
@@ -35,6 +44,7 @@ class _MainScaffoldState extends State<MainScaffold> {
     } else {
       return WalletPage(
         currentUser: widget.currentUser,
+        walletVN: walletVN,
       ); // เนื้อหา wallet ที่คุณเขียนไว้
     }
   }
@@ -59,6 +69,7 @@ class _MainScaffoldState extends State<MainScaffold> {
         });
       },
       currentUser: widget.currentUser,
+      walletVN: walletVN,
       child: _buildChild(role),
     );
   }
