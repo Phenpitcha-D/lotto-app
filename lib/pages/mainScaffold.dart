@@ -9,42 +9,54 @@ import 'package:lotto_app/pages/wallet.dart';
 
 class MainScaffold extends StatefulWidget {
   final UserLoginRespon currentUser;
-  const MainScaffold({super.key, required this.currentUser});
+  final int startIndex;
+  const MainScaffold({
+    super.key,
+    required this.currentUser,
+    required this.startIndex,
+  });
 
   @override
   State<MainScaffold> createState() => _MainScaffoldState();
 }
 
 class _MainScaffoldState extends State<MainScaffold> {
-  int _tab = 1; //หน้าล็อตโต้
+  int tab = 1; //หน้าล็อตโต้
   String _titleName = "Lotto";
+  bool showAdminPage = false;
 
   late final ValueNotifier<int> walletVN; //ใช้อัพเดตค่า แบบ Real ไทม์เด้
 
   @override
   void initState() {
     super.initState();
+    tab = widget.startIndex;
     walletVN = ValueNotifier<int>(widget.currentUser.user.wallet);
   }
 
-  Widget _buildChild(String role) {
-    if (_tab == 0) {
+  Widget buildChild(String role) {
+    if (tab == 0) {
       if (role == 'admin') {
         return ChecklottoAdmin(currentUser: widget.currentUser);
       } else {
         return CheckLottoPage(currentUser: widget.currentUser);
       }
-    } else if (_tab == 1) {
-      if (role == 'admin') {
+    } else if (tab == 1) {
+      if (role == 'admin' && showAdminPage) {
+        // ✅ ถ้า admin และกดปุ่มจาก LottolistPage → เปิดหน้า LottolistAdminPage
         return LottolistAdminPage(currentUser: widget.currentUser);
-      } else {
-        return LottolistPage(currentUser: widget.currentUser,walletVN: walletVN);
       }
-    } else {
-      return WalletPage(
+      return LottolistPage(
         currentUser: widget.currentUser,
         walletVN: walletVN,
-      ); // เนื้อหา wallet ที่คุณเขียนไว้
+        onGoAdmin: () {
+          setState(() {
+            showAdminPage = true; // ✅ trigger ให้เปิดหน้า admin
+          });
+        },
+      );
+    } else {
+      return WalletPage(currentUser: widget.currentUser, walletVN: walletVN);
     }
   }
 
@@ -53,14 +65,14 @@ class _MainScaffoldState extends State<MainScaffold> {
     String role = widget.currentUser.user.role;
     return Myscaffold(
       title: _titleName,
-      currentIndex: _tab,
+      currentIndex: tab,
       onNav: (i) {
         setState(() {
-          _tab = i;
+          tab = i;
           //  อัปเดต _titleName ตรงเน้
-          if (_tab == 0) {
+          if (tab == 0) {
             _titleName = "Check Lotto";
-          } else if (_tab == 1) {
+          } else if (tab == 1) {
             _titleName = "Lotto";
           } else {
             _titleName = "Wallet";
@@ -69,7 +81,7 @@ class _MainScaffoldState extends State<MainScaffold> {
       },
       currentUser: widget.currentUser,
       walletVN: walletVN,
-      child: _buildChild(role),
+      child: buildChild(role),
     );
   }
 }

@@ -193,6 +193,7 @@ class _LottolistAdminPageState extends State<LottolistAdminPage> {
       count: int.parse(_amountController.text),
       price: int.parse(_priceController.text),
     );
+
     final res = await http.post(
       Uri.parse("$url/api/lottos/release"),
       headers: {
@@ -204,11 +205,17 @@ class _LottolistAdminPageState extends State<LottolistAdminPage> {
 
     if (res.statusCode >= 200 && res.statusCode < 300) {
       if (!mounted) return;
-      Navigator.push(
+
+      //  โยกไปหน้า MainScaffold โดยเปิดแท็บ "ล็อตโต้" (index = 1)
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
-          builder: (_) => MainScaffold(currentUser: widget.currentUser),
+          builder: (_) => MainScaffold(
+            currentUser: widget.currentUser,
+            startIndex: 1, // ไป tab Lotto
+          ),
         ),
+        (route) => false,
       );
     } else {
       ScaffoldMessenger.of(

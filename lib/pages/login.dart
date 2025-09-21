@@ -343,7 +343,8 @@ class _LoginState extends State<Login> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => MainScaffold(currentUser: userLoginRespon),
+          builder: (context) =>
+              MainScaffold(currentUser: userLoginRespon, startIndex: 1),
         ),
       );
     } catch (e) {

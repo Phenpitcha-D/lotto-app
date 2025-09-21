@@ -9,7 +9,7 @@ import 'package:lotto_app/config/config.dart';
 import 'package:lotto_app/model/response/prize_res.dart';
 import 'package:lotto_app/model/response/reward_get_res.dart';
 import 'package:lotto_app/model/response/user_login_post_res.dart';
-import 'package:lotto_app/model/response/user_orderrecord_get_res.dart';// <-- ใส่ไฟล์โมเดลของคุณ
+import 'package:lotto_app/model/response/user_orderrecord_get_res.dart'; // <-- ใส่ไฟล์โมเดลของคุณ
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -127,8 +127,8 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                             data.results.elementAtOrNull(0)?.lottoNumber ?? '',
                         prizeText:
                             data.results.elementAtOrNull(0)?.bounty != null
-                                ? '*รางวัลละ ${data.results.elementAtOrNull(0)!.bounty} บาท'
-                                : '',
+                            ? '*รางวัลละ ${data.results.elementAtOrNull(0)!.bounty} บาท'
+                            : '',
                         leftAsset: _leftAsset,
                         rightAsset: _rightAsset,
                       ),
@@ -142,15 +142,16 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                                 cream: _cream,
                                 creamBorder: _creamBorder,
                                 redStripe: _redStripe,
-                                number: data.results
+                                number:
+                                    data.results
                                         .elementAtOrNull(1)
                                         ?.lottoNumber ??
                                     '',
                                 prizeText:
                                     data.results.elementAtOrNull(1)?.bounty !=
-                                            null
-                                        ? '*รางวัลละ ${data.results.elementAtOrNull(1)!.bounty} บาท'
-                                        : '',
+                                        null
+                                    ? '*รางวัลละ ${data.results.elementAtOrNull(1)!.bounty} บาท'
+                                    : '',
                                 leftAsset: _leftAsset,
                                 rightAsset: _rightAsset,
                               ),
@@ -164,15 +165,16 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                                 cream: _cream,
                                 creamBorder: _creamBorder,
                                 redStripe: _redStripe,
-                                number: data.results
+                                number:
+                                    data.results
                                         .elementAtOrNull(2)
                                         ?.lottoNumber ??
                                     '',
                                 prizeText:
                                     data.results.elementAtOrNull(2)?.bounty !=
-                                            null
-                                        ? '*รางวัลละ ${data.results.elementAtOrNull(2)!.bounty} บาท'
-                                        : '',
+                                        null
+                                    ? '*รางวัลละ ${data.results.elementAtOrNull(2)!.bounty} บาท'
+                                    : '',
                                 leftAsset: _leftAsset,
                                 rightAsset: _rightAsset,
                               ),
@@ -190,15 +192,16 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                                 cream: _cream,
                                 creamBorder: _creamBorder,
                                 redStripe: _redStripe,
-                                number: data.results
+                                number:
+                                    data.results
                                         .elementAtOrNull(3)
                                         ?.lottoNumber ??
                                     '',
                                 prizeText:
                                     data.results.elementAtOrNull(3)?.bounty !=
-                                            null
-                                        ? '*รางวัลละ ${data.results.elementAtOrNull(3)!.bounty} บาท'
-                                        : '',
+                                        null
+                                    ? '*รางวัลละ ${data.results.elementAtOrNull(3)!.bounty} บาท'
+                                    : '',
                                 leftAsset: _leftAsset,
                                 rightAsset: _rightAsset,
                               ),
@@ -212,15 +215,16 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                                 cream: _cream,
                                 creamBorder: _creamBorder,
                                 redStripe: _redStripe,
-                                number: data.results
+                                number:
+                                    data.results
                                         .elementAtOrNull(4)
                                         ?.lottoNumber ??
                                     '',
                                 prizeText:
                                     data.results.elementAtOrNull(4)?.bounty !=
-                                            null
-                                        ? '*รางวัลละ ${data.results.elementAtOrNull(4)!.bounty} บาท'
-                                        : '',
+                                        null
+                                    ? '*รางวัลละ ${data.results.elementAtOrNull(4)!.bounty} บาท'
+                                    : '',
                                 leftAsset: _leftAsset,
                                 rightAsset: _rightAsset,
                               ),
@@ -281,13 +285,11 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                               ConnectionState.waiting) {
                             return const Padding(
                               padding: EdgeInsets.symmetric(vertical: 24),
-                              child: Center(
-                                  child: CircularProgressIndicator()),
+                              child: Center(child: CircularProgressIndicator()),
                             );
                           }
                           if (snapshot.hasError) {
-                            return Text(
-                                'โหลดข้อมูลผิดพลาด: ${snapshot.error}');
+                            return Text('โหลดข้อมูลผิดพลาด: ${snapshot.error}');
                           }
                           final items = snapshot.data?.data ?? [];
                           if (items.isEmpty) {
@@ -298,8 +300,7 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                             children: [
                               for (var i = 0; i < items.length; i += 2)
                                 Padding(
-                                  padding:
-                                      const EdgeInsets.only(bottom: 10),
+                                  padding: const EdgeInsets.only(bottom: 10),
                                   child: Row(
                                     children: [
                                       Expanded(
@@ -310,8 +311,7 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                                           lid: items[i].lid,
                                           number: items[i].lottoNumber,
                                           price: items[i].purchasePrice,
-                                          purchasedAt:
-                                              items[i].purchaseTime,
+                                          purchasedAt: items[i].purchaseTime,
                                           url: url,
                                           currentUser: widget.currentUser,
                                         ),
@@ -324,15 +324,12 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                                             creamBorder: _creamBorder,
                                             redStripe: _redStripe,
                                             lid: items[i + 1].lid,
-                                            number:
-                                                items[i + 1].lottoNumber,
-                                            price: items[i + 1]
-                                                .purchasePrice,
-                                            purchasedAt: items[i + 1]
-                                                .purchaseTime,
+                                            number: items[i + 1].lottoNumber,
+                                            price: items[i + 1].purchasePrice,
+                                            purchasedAt:
+                                                items[i + 1].purchaseTime,
                                             url: url,
-                                            currentUser:
-                                                widget.currentUser,
+                                            currentUser: widget.currentUser,
                                           ),
                                         )
                                       else
@@ -406,13 +403,13 @@ class _PrizeColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 6),
-          card,
-        ],
-      );
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+      const SizedBox(height: 6),
+      card,
+    ],
+  );
 }
 
 class _PrizeLargeCard extends StatelessWidget {
@@ -705,7 +702,9 @@ class _MyTicketCard extends StatelessWidget {
         );
       }
 
-      final parsed = PrizeResponse.fromJson(jsonDecode(body) as Map<String, dynamic>);
+      final parsed = PrizeResponse.fromJson(
+        jsonDecode(body) as Map<String, dynamic>,
+      );
 
       if (!parsed.isWinner) {
         return showLoseDialog(context, extraMessage: parsed.message);
@@ -748,7 +747,9 @@ class _MyTicketCard extends StatelessWidget {
         );
       }
 
-      final parsed = PrizeResponse.fromJson(jsonDecode(body) as Map<String, dynamic>);
+      final parsed = PrizeResponse.fromJson(
+        jsonDecode(body) as Map<String, dynamic>,
+      );
 
       if (parsed.alreadyClaimed) {
         return showAlreadyClaimedDialog(
@@ -852,13 +853,21 @@ void showPrizeWinDialog(
             Text("สลากเลข: $lottoNumber"),
             const SizedBox(height: 8),
           ],
-          const Text("รายละเอียดรางวัล", style: TextStyle(fontWeight: FontWeight.w700)),
+          const Text(
+            "รายละเอียดรางวัล",
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 8),
           prizeListView(prizes),
           const Divider(),
           Row(
             children: [
-              const Expanded(child: Text("รวมทั้งสิ้น", style: TextStyle(fontWeight: FontWeight.w700))),
+              const Expanded(
+                child: Text(
+                  "รวมทั้งสิ้น",
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
               Text(baht(total)),
             ],
           ),
@@ -871,7 +880,9 @@ void showPrizeWinDialog(
           style: FilledButton.styleFrom(
             backgroundColor: const Color(0xFF2196F3),
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
             padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
           ),
           child: const Text("รับรางวัล"),
@@ -909,13 +920,21 @@ void showClaimSuccessDialog(
           const SizedBox(height: 8),
           if (lottoNumber.isNotEmpty) Text("สลากเลข: $lottoNumber"),
           const SizedBox(height: 8),
-          const Text("รายละเอียดรางวัล", style: TextStyle(fontWeight: FontWeight.w700)),
+          const Text(
+            "รายละเอียดรางวัล",
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 8),
           prizeListView(prizes),
           const Divider(),
           Row(
             children: [
-              const Expanded(child: Text("ยอดที่ได้รับ", style: TextStyle(fontWeight: FontWeight.w700))),
+              const Expanded(
+                child: Text(
+                  "ยอดที่ได้รับ",
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
               Text(baht(total)),
             ],
           ),
@@ -928,7 +947,9 @@ void showClaimSuccessDialog(
           style: FilledButton.styleFrom(
             backgroundColor: const Color(0xFF4CAF50),
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
           child: const Text("ปิด"),
         ),
@@ -961,13 +982,21 @@ void showAlreadyClaimedDialog(
           const SizedBox(height: 8),
           if (lottoNumber.isNotEmpty) Text("สลากเลข: $lottoNumber"),
           const SizedBox(height: 8),
-          const Text("รายละเอียดรางวัล", style: TextStyle(fontWeight: FontWeight.w700)),
+          const Text(
+            "รายละเอียดรางวัล",
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 8),
           prizeListView(prizes),
           const Divider(),
           Row(
             children: [
-              const Expanded(child: Text("ยอดที่เคยได้รับ", style: TextStyle(fontWeight: FontWeight.w700))),
+              const Expanded(
+                child: Text(
+                  "ยอดที่เคยได้รับ",
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
               Text(baht(total)),
             ],
           ),
@@ -979,7 +1008,9 @@ void showAlreadyClaimedDialog(
           onPressed: () => Navigator.of(context).pop(),
           style: FilledButton.styleFrom(
             foregroundColor: const Color(0xFF333333),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
           child: const Text("ปิด"),
         ),
@@ -1059,36 +1090,36 @@ void showErrorDialog(
 /* ------------------------------ leaf widgets ------------------------------ */
 
 Widget _circleIcon(double size) => Container(
-      width: size,
-      height: size,
-      decoration: const BoxDecoration(
-        color: Color(0xFFF2D29A),
-        shape: BoxShape.circle,
-      ),
-      alignment: Alignment.center,
-      child: Image.asset(
-        'assets/images/lotto_pool.png',
-        width: size - 10,
-        height: size - 10,
-        fit: BoxFit.contain,
-      ),
-    );
+  width: size,
+  height: size,
+  decoration: const BoxDecoration(
+    color: Color(0xFFF2D29A),
+    shape: BoxShape.circle,
+  ),
+  alignment: Alignment.center,
+  child: Image.asset(
+    'assets/images/lotto_pool.png',
+    width: size - 10,
+    height: size - 10,
+    fit: BoxFit.contain,
+  ),
+);
 
 Widget _circleImage(String asset, double size) => Container(
-      width: size,
-      height: size,
-      decoration: const BoxDecoration(
-        color: Color(0xFFF2D29A),
-        shape: BoxShape.circle,
-      ),
-      alignment: Alignment.center,
-      child: Image.asset(
-        asset,
-        width: size - 10,
-        height: size - 10,
-        fit: BoxFit.contain,
-      ),
-    );
+  width: size,
+  height: size,
+  decoration: const BoxDecoration(
+    color: Color(0xFFF2D29A),
+    shape: BoxShape.circle,
+  ),
+  alignment: Alignment.center,
+  child: Image.asset(
+    asset,
+    width: size - 10,
+    height: size - 10,
+    fit: BoxFit.contain,
+  ),
+);
 
 class _PillText extends StatelessWidget {
   final String text;
@@ -1097,24 +1128,24 @@ class _PillText extends StatelessWidget {
   const _PillText(this.text, {this.fontSize = 14, this.padV = 4});
   @override
   Widget build(BuildContext context) => Container(
-        padding: EdgeInsets.symmetric(horizontal: 12, vertical: padV),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: const [
-            BoxShadow(color: Colors.black12, blurRadius: 3, offset: Offset(0, 1)),
-          ],
-        ),
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: fontSize,
-            letterSpacing: 1.2,
-          ),
-        ),
-      );
+    padding: EdgeInsets.symmetric(horizontal: 12, vertical: padV),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18),
+      boxShadow: const [
+        BoxShadow(color: Colors.black12, blurRadius: 3, offset: Offset(0, 1)),
+      ],
+    ),
+    child: Text(
+      text,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        fontWeight: FontWeight.w700,
+        fontSize: fontSize,
+        letterSpacing: 1.2,
+      ),
+    ),
+  );
 }
 
 Widget _pillNumberInline({
@@ -1222,21 +1253,20 @@ class DashedLine extends StatelessWidget {
   const DashedLine();
   @override
   Widget build(BuildContext context) => LayoutBuilder(
-        builder: (context, c) {
-          const dashW = 6.0, dashSpace = 4.0, h = 1.2;
-          final n =
-              (c.maxWidth / (dashW + dashSpace)).floor().clamp(0, 200);
-          return Wrap(
-            spacing: dashSpace,
-            children: List.generate(
-              n,
-              (_) => Container(
-                width: dashW,
-                height: h,
-                color: const Color(0xFF8B5E3C),
-              ),
-            ),
-          );
-        },
+    builder: (context, c) {
+      const dashW = 6.0, dashSpace = 4.0, h = 1.2;
+      final n = (c.maxWidth / (dashW + dashSpace)).floor().clamp(0, 200);
+      return Wrap(
+        spacing: dashSpace,
+        children: List.generate(
+          n,
+          (_) => Container(
+            width: dashW,
+            height: h,
+            color: const Color(0xFF8B5E3C),
+          ),
+        ),
       );
+    },
+  );
 }

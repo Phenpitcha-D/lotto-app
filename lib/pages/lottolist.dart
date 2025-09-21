@@ -4,11 +4,18 @@ import 'package:lotto_app/config/config.dart';
 import 'package:lotto_app/materials/lottoCard.dart';
 import 'package:lotto_app/model/response/lottolist_res.dart';
 import 'package:lotto_app/model/response/user_login_post_res.dart';
+import 'package:lotto_app/pages/lottolist_admin.dart';
 
 class LottolistPage extends StatefulWidget {
   final UserLoginRespon currentUser;
   final ValueNotifier<int> walletVN;
-  const LottolistPage({super.key, required this.currentUser, required this.walletVN});
+  final VoidCallback? onGoAdmin;
+  const LottolistPage({
+    super.key,
+    required this.currentUser,
+    required this.walletVN,
+    this.onGoAdmin,
+  });
 
   @override
   State<LottolistPage> createState() => _LottolistPageState();
@@ -86,12 +93,48 @@ class _LottolistPageState extends State<LottolistPage> {
                     child: Text("เกิดข้อผิดพลาด: ${snapshot.error}"),
                   );
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'ยังไม่มีการวางขายล็อตโต้',
-                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                    ),
-                  );
+                  if (widget.currentUser.user.role == 'admin') {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'ยังไม่มีการวางขายล็อตโต้',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              widget.onGoAdmin?.call();
+                            },
+                            icon: const Icon(Icons.add_business),
+                            label: const Text('เริ่มวางจำหน่ายล็อตโต้'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2196F3),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  } else {
+                    return Center(
+                      child: Text(
+                        'ยังไม่มีการวางขายล็อตโต้',
+                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                      ),
+                    );
+                  }
                 }
 
                 // กรองตาม search
