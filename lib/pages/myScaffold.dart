@@ -36,8 +36,8 @@ class Myscaffold extends StatefulWidget {
 class _MyscaffoldState extends State<Myscaffold> {
   // ===== ปรับค่าตาม asset/จอจริง เพื่อความเหมือน 100% =====
   static const double _headerHeight = 224;
-  static const double _titleFontSize = 46;
-  static const double _userCardTopOffset = 76;
+  static const double titleFontSize = 46;
+  static const double userCardTopOffset = 76;
   static const double _contentTopOverlap = 154;
   static const double _contentRadius = 36;
 
@@ -69,34 +69,42 @@ class _MyscaffoldState extends State<Myscaffold> {
 
             // 2) Title กลาง
             Positioned(
-              top: topPad + 10,
+              top: topPad + 5,
               left: 0,
               right: 0,
-              child: Text(
-                widget.title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: _titleFontSize,
-                  fontWeight: FontWeight.w800,
-                  height: 1.1,
-                ),
-              ),
-            ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Title กลางเสมอ
+                  Text(
+                    widget.title,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: titleFontSize,
+                      fontWeight: FontWeight.w800,
+                      height: 1.1,
+                    ),
+                  ),
 
-            Positioned(
-              top: topPad + 10,
-              left: 350,
-              right: 0,
-              child: IconButton(
-                onPressed: Logout,
-                icon: Icon(Icons.door_back_door, color: Colors.white),
+                  // ปุ่ม Logout
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 12, 5, 0),
+                      child: IconButton(
+                        onPressed: Logout,
+                        icon: Icon(Icons.door_back_door, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
 
             // 3) การ์ดผู้ใช้
             Positioned(
-              top: topPad + _userCardTopOffset,
+              top: topPad + userCardTopOffset,
               left: 16,
               right: 16,
               child: Container(
@@ -331,7 +339,7 @@ class _BottomOverhangItem extends StatelessWidget {
   }
 }
 
-  String formatBalance(int amount) {
-    final nf = NumberFormat("#,###", "th_TH");
-    return '${nf.format(amount.toDouble())}';
-  }
+String formatBalance(int amount) {
+  final nf = NumberFormat("#,###", "th_TH");
+  return '${nf.format(amount.toDouble())}';
+}
