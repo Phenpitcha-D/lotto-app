@@ -65,6 +65,26 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
           return Text('โหลดข้อมูลผิดพลาด: ${snapshot.error}');
         }
         final data = snapshot.data!; // RewardResultResponse
+        //หา Result ตามแรงก์
+        Result? byRank(int rank) {
+          for (final r in data.results) {
+            if (r.bountyRank == rank) return r;
+          }
+          return null;
+        }
+
+        // เตรียมตัวแปรตามแรงก์ 1..5
+        final r1 = byRank(1);
+        final r2 = byRank(2);
+        final r3 = byRank(3);
+        final r4 = byRank(4); // เลขท้าย 3 ตัว
+        final r5 = byRank(5); // เลขท้าย 2 ตัว
+
+        String tail(String? s, int n) {
+          if (s == null || s.isEmpty) return '';
+          return s.length <= n ? s : s.substring(s.length - n);
+        }
+
         return SingleChildScrollView(
           child: Container(
             decoration: BoxDecoration(
@@ -123,11 +143,9 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                         creamBorder: _creamBorder,
                         redStripe: _redStripe,
                         warnText: _warnText,
-                        number:
-                            data.results.elementAtOrNull(0)?.lottoNumber ?? '',
-                        prizeText:
-                            data.results.elementAtOrNull(0)?.bounty != null
-                            ? '*รางวัลละ ${data.results.elementAtOrNull(0)!.bounty} บาท'
+                       number: r1?.lottoNumber ?? '',
+                        prizeText: (r1?.bounty != null)
+                            ? '*รางวัลละ ${r1!.bounty} บาท'
                             : '',
                         leftAsset: _leftAsset,
                         rightAsset: _rightAsset,
@@ -142,15 +160,9 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                                 cream: _cream,
                                 creamBorder: _creamBorder,
                                 redStripe: _redStripe,
-                                number:
-                                    data.results
-                                        .elementAtOrNull(1)
-                                        ?.lottoNumber ??
-                                    '',
-                                prizeText:
-                                    data.results.elementAtOrNull(1)?.bounty !=
-                                        null
-                                    ? '*รางวัลละ ${data.results.elementAtOrNull(1)!.bounty} บาท'
+                                number: r2?.lottoNumber ?? '',
+                                prizeText: (r2?.bounty != null)
+                                    ? '*รางวัลละ ${r2!.bounty} บาท'
                                     : '',
                                 leftAsset: _leftAsset,
                                 rightAsset: _rightAsset,
@@ -165,15 +177,9 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                                 cream: _cream,
                                 creamBorder: _creamBorder,
                                 redStripe: _redStripe,
-                                number:
-                                    data.results
-                                        .elementAtOrNull(2)
-                                        ?.lottoNumber ??
-                                    '',
-                                prizeText:
-                                    data.results.elementAtOrNull(2)?.bounty !=
-                                        null
-                                    ? '*รางวัลละ ${data.results.elementAtOrNull(2)!.bounty} บาท'
+                                number: r3?.lottoNumber ?? '',
+                                prizeText: (r3?.bounty != null)
+                                    ? '*รางวัลละ ${r3!.bounty} บาท'
                                     : '',
                                 leftAsset: _leftAsset,
                                 rightAsset: _rightAsset,
@@ -192,15 +198,9 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                                 cream: _cream,
                                 creamBorder: _creamBorder,
                                 redStripe: _redStripe,
-                                number:
-                                    data.results
-                                        .elementAtOrNull(3)
-                                        ?.lottoNumber ??
-                                    '',
-                                prizeText:
-                                    data.results.elementAtOrNull(3)?.bounty !=
-                                        null
-                                    ? '*รางวัลละ ${data.results.elementAtOrNull(3)!.bounty} บาท'
+                                number: tail(r1?.lottoNumber, 3),
+                                prizeText: (r4?.bounty != null)
+                                    ? '*รางวัลละ ${r4!.bounty} บาท'
                                     : '',
                                 leftAsset: _leftAsset,
                                 rightAsset: _rightAsset,
@@ -215,16 +215,11 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                                 cream: _cream,
                                 creamBorder: _creamBorder,
                                 redStripe: _redStripe,
-                                number:
-                                    data.results
-                                        .elementAtOrNull(4)
-                                        ?.lottoNumber ??
-                                    '',
-                                prizeText:
-                                    data.results.elementAtOrNull(4)?.bounty !=
-                                        null
-                                    ? '*รางวัลละ ${data.results.elementAtOrNull(4)!.bounty} บาท'
+                                 number: tail(r5?.lottoNumber, 2),
+                                prizeText: (r5?.bounty != null)
+                                    ? '*รางวัลละ ${r5!.bounty} บาท'
                                     : '',
+
                                 leftAsset: _leftAsset,
                                 rightAsset: _rightAsset,
                               ),

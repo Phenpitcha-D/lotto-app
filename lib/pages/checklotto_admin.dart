@@ -184,7 +184,7 @@ class _ChecklottoAdminState extends State<ChecklottoAdmin> {
                                 cream: _cream,
                                 creamBorder: _creamBorder,
                                 redStripe: _redStripe,
-                                number: tail(r4?.lottoNumber, 3),
+                                number: tail(r1?.lottoNumber, 3),
                                 prizeText: (r4?.bounty != null)
                                     ? '*รางวัลละ ${r4!.bounty} บาท'
                                     : '',
@@ -578,7 +578,7 @@ class _PrizeLargeCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              const _DashedLine(),
+              const DashedLine(),
             ],
           ),
         ),
@@ -645,7 +645,7 @@ class _PrizeSmallCard extends StatelessWidget {
                     child: _pillNumberInlineSpaced(
                       number: number,
                       rightAsset: rightAsset,
-                      fontSize: 22, // ใหญ่ขึ้นได้ ป้องกันล้นด้วย FittedBox
+                      fontSize: 22,
                       padV: 8,
                       digitGap: 10,
                       iconSize: 16,
@@ -655,16 +655,16 @@ class _PrizeSmallCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 6),
-              const Text(
-                '*รางวัลละ: 50,000 บาท', // ค่าในตัวอย่าง เรียกใช้จริงส่งจากพารามิเตอร์แล้ว
-                style: TextStyle(
+              Text(
+                prizeText,
+                style: const TextStyle(
                   fontSize: 10,
                   color: Color(0xFFCF3030),
                   fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 6),
-              const _DashedLine(),
+              const DashedLine(),
             ],
           ),
         ),
@@ -755,7 +755,7 @@ class _MyTicketCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 6),
-              const _DashedLine(),
+              const DashedLine(),
             ],
           ),
         ),
@@ -943,8 +943,8 @@ Widget _pillNumberInlineSpaced({
   );
 }
 
-class _DashedLine extends StatelessWidget {
-  const _DashedLine();
+class DashedLine extends StatelessWidget {
+  const DashedLine();
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, c) {
