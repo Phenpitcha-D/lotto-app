@@ -28,7 +28,7 @@ class LottoCard extends StatefulWidget {
 }
 
 class _LottoCardState extends State<LottoCard> {
-  bool _isBought = false;
+  bool isBought = false;
   String url = '';
 
   @override
@@ -86,32 +86,49 @@ class _LottoCardState extends State<LottoCard> {
                     // เลข
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 0.5,
+                        horizontal: 8,
+                        vertical: 4,
                       ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: Text(
-                        widget.number,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.25,
-                          fontSize: 11,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: widget.number.split('').map((digit) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 2,
+                              ),
+                              child: Text(
+                                digit,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            );
+                          }).toList(),
                         ),
                       ),
                     ),
+
                     const SizedBox(height: 2),
-                    Text(
-                      'ราคา : ${widget.price} บาท',
-                      style: TextStyle(color: Colors.grey[800], fontSize: 10),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'ราคา : ${widget.price} บาท',
+                        style: TextStyle(color: Colors.grey[800], fontSize: 10),
+                      ),
                     ),
 
                     // ปุ่มซื้อ
                     Expanded(
                       child: SizedBox(
-                        height: 30,
+                        height: 50,
                         child: ElevatedButton.icon(
                           onPressed: () {
                             showDialog(
@@ -189,18 +206,28 @@ class _LottoCardState extends State<LottoCard> {
                             );
                           },
                           icon: Icon(
-                            _isBought
-                                ? Icons.check_circle
-                                : Icons.shopping_cart,
-                            size: 16,
+                            isBought ? Icons.check_circle : Icons.shopping_cart,
+                            size: 12,
                           ),
-                          label: Text('ซื้อเลย'),
+                          label: const FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              'ซื้อเลย',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF2E7D32),
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(horizontal: 10),
+                            minimumSize: const Size(0, 50), // 🔹 บังคับสูง 50
+                            tapTargetSize: MaterialTapTargetSize
+                                .shrinkWrap, // 🔹 ป้องกัน overflow
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: BorderRadius.circular(6),
                             ),
                             elevation: 0,
                           ),
@@ -238,7 +265,7 @@ class _LottoCardState extends State<LottoCard> {
           right: 22,
           bottom: 6,
           child: CustomPaint(
-            painter: _DashedLinePainter(color: Colors.brown.withOpacity(0.6)),
+            painter: DashedLinePainter(color: Colors.brown.withOpacity(0.6)),
             size: const Size(double.infinity, 1),
           ),
         ),
@@ -318,11 +345,11 @@ class _LottoCardState extends State<LottoCard> {
 }
 
 // 🔹 วาดเส้นประแนวนอน
-class _DashedLinePainter extends CustomPainter {
+class DashedLinePainter extends CustomPainter {
   final Color color;
   final double dashWidth;
   final double dashSpace;
-  _DashedLinePainter({
+  DashedLinePainter({
     required this.color,
     this.dashWidth = 6,
     this.dashSpace = 4,
