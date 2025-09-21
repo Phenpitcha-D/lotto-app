@@ -1,173 +1,261 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:lotto_app/config/config.dart';
+import 'package:lotto_app/model/response/reward_get_res.dart';
+import 'package:lotto_app/model/response/user_login_post_res.dart';
 
 class ChecklottoAdmin extends StatefulWidget {
-  const ChecklottoAdmin({super.key});
+  final UserLoginRespon currentUser;
+  const ChecklottoAdmin({super.key, required this.currentUser});
 
   @override
   State<ChecklottoAdmin> createState() => _ChecklottoAdminState();
 }
 
 class _ChecklottoAdminState extends State<ChecklottoAdmin> {
-  // สีที่ใช้ซ้ำ
   static const _cream = Color(0xFFF6E9CC);
   static const _creamBorder = Color(0xFFE5CFA2);
   static const _redStripe = Color(0xFFE24A4A);
   static const _warnText = Color(0xFFCF3030);
 
-  // รูปที่ใช้ซ้ำ
   static const _leftAsset = 'assets/images/lotto_pool.png';
   static const _rightAsset = 'assets/images/catcoin.png';
+
+  late Future<RewardResultResponse> loadReward;
+
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      loadReward = RewardResult();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Container(
-        decoration: BoxDecoration(
-          color: Color(0xFFFFF2D9),
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 12,
-              offset: Offset(0, 6),
+    return FutureBuilder(
+      future: loadReward,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Text('โหลดข้อมูลผิดพลาด: ${snapshot.error}');
+        }
+        final data = snapshot.data!;
+        //หา Result ตามแรงก์
+        Result? byRank(int rank) {
+          for (final r in data.results) {
+            if (r.bountyRank == rank) return r;
+          }
+          return null;
+        }
+
+        // เตรียมตัวแปรตามแรงก์ 1..5
+        final r1 = byRank(1);
+        final r2 = byRank(2);
+        final r3 = byRank(3);
+        final r4 = byRank(4); // เลขท้าย 3 ตัว
+        final r5 = byRank(5); // เลขท้าย 2 ตัว
+
+        String tail(String? s, int n) {
+          if (s == null || s.isEmpty) return '';
+          return s.length <= n ? s : s.substring(s.length - n);
+        }
+
+        return SingleChildScrollView(
+          child: Container(
+            decoration: BoxDecoration(
+              color: Color(0xFFFFF2D9),
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 12,
+                  offset: Offset(0, 6),
+                ),
+              ],
             ),
-          ],
-        ),
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ====== รางวัลที่ออก ======
-            Container(
-              margin: const EdgeInsets.only(top: 12),
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 12,
-                    offset: Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'รางวัลที่ออก',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-                  ),
-                  const SizedBox(height: 8),
-                  const Center(
-                    child: Text(
-                      'รางวัลที่ 1',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  _PrizeLargeCard(
-                    cream: _cream,
-                    creamBorder: _creamBorder,
-                    redStripe: _redStripe,
-                    warnText: _warnText,
-                    number: '1 2 3 4 5 6',
-                    prizeText: '*รางวัลละ: 6,000,000 บาท',
-                    leftAsset: _leftAsset,
-                    rightAsset: _rightAsset,
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _PrizeColumn(
-                          title: 'รางวัลที่ 2',
-                          card: _PrizeSmallCard(
-                            cream: _cream,
-                            creamBorder: _creamBorder,
-                            redStripe: _redStripe,
-                            number: '1 2 3 4 5 6',
-                            prizeText: '*รางวัลละ: 50,000 บาท',
-                            leftAsset: _leftAsset,
-                            rightAsset: _rightAsset,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _PrizeColumn(
-                          title: 'รางวัลที่ 3',
-                          card: _PrizeSmallCard(
-                            cream: _cream,
-                            creamBorder: _creamBorder,
-                            redStripe: _redStripe,
-                            number: '1 2 3 4 5 6',
-                            prizeText: '*รางวัลละ: 1,000 บาท',
-                            leftAsset: _leftAsset,
-                            rightAsset: _rightAsset,
-                          ),
-                        ),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ====== รางวัลที่ออก ======
+                Container(
+                  margin: const EdgeInsets.only(top: 12),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 12,
+                        offset: Offset(0, 6),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-
-                  Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: _PrizeColumn(
-                          title: 'รางวัลเลขท้าย 3 ตัว',
-                          card: _PrizeSmallCard(
-                            cream: _cream,
-                            creamBorder: _creamBorder,
-                            redStripe: _redStripe,
-                            number: '1 2 3 4 5 6',
-                            prizeText: '*รางวัลละ: 500 บาท',
-                            leftAsset: _leftAsset,
-                            rightAsset: _rightAsset,
+                      const Text(
+                        'รางวัลที่ออก',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Center(
+                        child: Text(
+                          'รางวัลที่ 1',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _PrizeColumn(
-                          title: 'รางวัลเลขท้าย 3 ตัว',
-                          card: _PrizeSmallCard(
-                            cream: _cream,
-                            creamBorder: _creamBorder,
-                            redStripe: _redStripe,
-                            number: '1 2 3 4 5 6',
-                            prizeText: '*รางวัลละ: 100 บาท',
-                            leftAsset: _leftAsset,
-                            rightAsset: _rightAsset,
-                          ),
-                        ),
+                      const SizedBox(height: 8),
+
+                      _PrizeLargeCard(
+                        cream: _cream,
+                        creamBorder: _creamBorder,
+                        redStripe: _redStripe,
+                        warnText: _warnText,
+                        number: r1?.lottoNumber ?? '',
+                        prizeText: (r1?.bounty != null)
+                            ? '*รางวัลละ ${r1!.bounty} บาท'
+                            : '',
+                        leftAsset: _leftAsset,
+                        rightAsset: _rightAsset,
                       ),
+
+                      const SizedBox(height: 16),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _PrizeColumn(
+                              title: 'รางวัลที่ 2',
+                              card: _PrizeSmallCard(
+                                cream: _cream,
+                                creamBorder: _creamBorder,
+                                redStripe: _redStripe,
+                                number: r2?.lottoNumber ?? '',
+                                prizeText: (r2?.bounty != null)
+                                    ? '*รางวัลละ ${r2!.bounty} บาท'
+                                    : '',
+                                leftAsset: _leftAsset,
+                                rightAsset: _rightAsset,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _PrizeColumn(
+                              title: 'รางวัลที่ 3',
+                              card: _PrizeSmallCard(
+                                cream: _cream,
+                                creamBorder: _creamBorder,
+                                redStripe: _redStripe,
+                                number: r3?.lottoNumber ?? '',
+                                prizeText: (r3?.bounty != null)
+                                    ? '*รางวัลละ ${r3!.bounty} บาท'
+                                    : '',
+                                leftAsset: _leftAsset,
+                                rightAsset: _rightAsset,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _PrizeColumn(
+                              title: 'รางวัลเลขท้าย 3 ตัว',
+                              card: _PrizeSmallCard(
+                                cream: _cream,
+                                creamBorder: _creamBorder,
+                                redStripe: _redStripe,
+                                number: tail(r4?.lottoNumber, 3),
+                                prizeText: (r4?.bounty != null)
+                                    ? '*รางวัลละ ${r4!.bounty} บาท'
+                                    : '',
+
+                                leftAsset: _leftAsset,
+                                rightAsset: _rightAsset,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _PrizeColumn(
+                              title: 'รางวัลเลขท้าย 2 ตัว',
+                              card: _PrizeSmallCard(
+                                cream: _cream,
+                                creamBorder: _creamBorder,
+                                redStripe: _redStripe,
+                                number: tail(r5?.lottoNumber, 2),
+                                prizeText: (r5?.bounty != null)
+                                    ? '*รางวัลละ ${r5!.bounty} บาท'
+                                    : '',
+
+                                leftAsset: _leftAsset,
+                                rightAsset: _rightAsset,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      // ==== เพิ่มแถบควบคุมการสุ่ม ====
+                      const SizedBox(height: 16),
+                      _RewardActionBar(currentUser: widget.currentUser),
                     ],
                   ),
-                  // ==== เพิ่มแถบควบคุมการสุ่ม ====
-                  const SizedBox(height: 16),
-                  _RewardActionBar(),
-                ],
-              ),
+                ),
+                const SizedBox(height: 18),
+              ],
             ),
-            const SizedBox(height: 18),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
+  }
+
+  Future<RewardResultResponse> RewardResult() async {
+    var config = await Configuration.getConfig();
+    var url = config['apiEndpoint'];
+    var uri = Uri.parse('$url/api/lottos/results');
+    var res = await http.get(
+      uri,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Authorization": "Bearer ${widget.currentUser.token}",
+      },
+    );
+
+    if (res.statusCode == 200) {
+      return rewardResultResponseFromJson(res.body);
+    } else {
+      debugPrint('GET $uri -> ${res.statusCode}\n${res.body}');
+      throw Exception("โหลดข้อมูลไม่สำเร็จ: ${res.statusCode}");
+    }
   }
 }
 
-// ---------------- Reward Action Bar ----------------
+// --------------------------------------- Reward Action Bar -----------------------------------------------
 
 class _RewardActionBar extends StatefulWidget {
+  final UserLoginRespon currentUser;
+
+  const _RewardActionBar({super.key, required this.currentUser});
   @override
   State<_RewardActionBar> createState() => _RewardActionBarState();
 }
@@ -241,11 +329,7 @@ class _RewardActionBarState extends State<_RewardActionBar> {
                       ),
                     ),
                     FilledButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('สุ่มด้วยโหมด: $_selected')),
-                        );
-                      },
+                      onPressed: DrawReward,
                       style: FilledButton.styleFrom(
                         backgroundColor: const Color(0xFF2196F3),
                         foregroundColor: Colors.white,
@@ -300,6 +384,66 @@ class _RewardActionBarState extends State<_RewardActionBar> {
       ],
     );
   }
+
+  void DrawReward() async {
+    Navigator.pop(context);
+    try {
+      final config = await Configuration.getConfig();
+      final url = config['apiEndpoint'];
+
+      final endpoint = _selected == 'สุ่มจากลอตเตอรี่ที่ขายไปแล้ว'
+          ? '$url/api/lottos/draw/purchased'
+          : '$url/api/lottos/draw/all';
+
+      final uri = Uri.parse(endpoint);
+      final resp = await http
+          .get(
+            uri,
+            headers: {
+              "Content-Type": "application/json; charset=utf-8",
+              "Authorization": "Bearer ${widget.currentUser.token}",
+            },
+          )
+          .timeout(const Duration(seconds: 20));
+
+      final bodyStr = utf8.decode(resp.bodyBytes);
+
+      if (resp.statusCode < 200 || resp.statusCode >= 300) {
+        String msg;
+        try {
+          final m = jsonDecode(bodyStr) as Map<String, dynamic>;
+          msg = (m['message'] ?? 'ออกรางวัลไม่สำเร็จ (${resp.statusCode})')
+              .toString();
+        } catch (_) {
+          msg = 'ออกรางวัลไม่สำเร็จ (${resp.statusCode})';
+        }
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(msg)));
+        return;
+      }
+      log('DrawReward OK: $bodyStr');
+      setState(() {});
+    } on TimeoutException {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('การเชื่อมต่อล่าช้า กรุณาลองใหม่อีกครั้ง'),
+        ),
+      );
+    } catch (e) {
+      log('DrawReward error: $e');
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('เกิดข้อผิดพลาด: $e')));
+    }
+  }
+}
+
+extension on Future<Map<String, dynamic>> {
+  operator [](String other) {}
 }
 
 // ดรอปดาวน์
