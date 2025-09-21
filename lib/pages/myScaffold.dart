@@ -145,24 +145,37 @@ class _MyscaffoldState extends State<Myscaffold> {
                         color: Colors.black.withOpacity(.15),
                       ),
                     ),
-                    const Icon(
-                      Icons.credit_card,
-                      size: 22,
-                      color: Colors.black87,
-                    ),
-                    const SizedBox(width: 8),
-                    ValueListenableBuilder<int>(
-                      valueListenable: widget.walletVN,
-                      builder: (_, bal, __) {
-                        return Text(
-                          formatBalance(bal),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black87,
-                          ),
-                        );
-                      },
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: () {
+                          widget.onNav?.call(2); // 2 = Wallet tab
+                        },
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.credit_card,
+                              size: 22,
+                              color: Colors.black87,
+                            ),
+                            const SizedBox(width: 8),
+                            ValueListenableBuilder<int>(
+                              valueListenable: widget.walletVN,
+                              builder: (_, bal, __) {
+                                return Text(
+                                  formatBalance(bal),
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.black87,
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
