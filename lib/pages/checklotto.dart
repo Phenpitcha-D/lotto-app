@@ -249,6 +249,7 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
 
                 // ====== สลากของฉัน ======
                 Container(
+                  width: double.infinity,
                   margin: const EdgeInsets.only(top: 16),
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 50),
                   decoration: BoxDecoration(
