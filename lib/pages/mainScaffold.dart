@@ -39,7 +39,7 @@ class _MainScaffoldState extends State<MainScaffold> {
       if (role == 'admin') {
         return ChecklottoAdmin(currentUser: widget.currentUser);
       } else {
-        return CheckLottoPage(currentUser: widget.currentUser);
+        return CheckLottoPage(currentUser: widget.currentUser, walletVN: walletVN,);
       }
     } else if (tab == 1) {
       if (role == 'admin' && showAdminPage) {

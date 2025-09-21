@@ -20,7 +20,8 @@ class AppColors {
 
 class CheckLottoPage extends StatefulWidget {
   final UserLoginRespon currentUser;
-  const CheckLottoPage({super.key, required this.currentUser});
+  final ValueNotifier<int> walletVN;
+  const CheckLottoPage({super.key, required this.currentUser, required this.walletVN});
   @override
   State<CheckLottoPage> createState() => _CheckLottoPageState();
 }
@@ -310,6 +311,7 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                                           purchasedAt: items[i].purchaseTime,
                                           url: url,
                                           currentUser: widget.currentUser,
+                                          walletVN: widget.walletVN, 
                                         ),
                                       ),
                                       const SizedBox(width: 12),
@@ -326,6 +328,7 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                                                 items[i + 1].purchaseTime,
                                             url: url,
                                             currentUser: widget.currentUser,
+                                            walletVN: widget.walletVN,
                                           ),
                                         )
                                       else
@@ -579,6 +582,7 @@ class _MyTicketCard extends StatelessWidget {
   final String url;
   final UserLoginRespon currentUser;
   final int lid;
+  final ValueNotifier<int> walletVN;
 
   const _MyTicketCard({
     required this.cream,
@@ -589,7 +593,7 @@ class _MyTicketCard extends StatelessWidget {
     required this.purchasedAt,
     required this.url,
     required this.currentUser,
-    required this.lid,
+    required this.lid, required this.walletVN,
   });
 
   @override
@@ -758,6 +762,8 @@ class _MyTicketCard extends StatelessWidget {
       }
 
       if (parsed.success) {
+        //  อัปเดต wallet แบบ Real-time
+  walletVN.value += parsed.totalBounty;
         return showClaimSuccessDialog(
           context,
           lottoNumber: parsed.lottoNumber ?? number,
