@@ -342,6 +342,6 @@ class _BottomOverhangItemState extends State<BottomOverhangItem> {
 }
 
 String formatBalance(int amount) {
-  final nf = NumberFormat("#,###", "th_TH");
-  return nf.format(amount);
+  final nf = NumberFormat("#,##0.00", "th_TH");
+  return '\$ ${nf.format(amount)}';
 }

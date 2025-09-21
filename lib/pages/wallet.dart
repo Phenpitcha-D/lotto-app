@@ -96,9 +96,11 @@ class _WalletPageState extends State<WalletPage> {
                         child: ValueListenableBuilder<int>(
                           valueListenable: widget.walletVN,
                           builder: (context, bal, _) {
-                            return Text(
-                              formatBalance(bal),
-                              style: TextStyle(fontSize: 36),
+                            return Center(
+                              child: Text(
+                                formatBalance(bal),
+                                style: TextStyle(fontSize: 36),
+                              ),
                             );
                           },
                         ),
@@ -417,7 +419,7 @@ class _WalletPageState extends State<WalletPage> {
 
   // แปลง 1000 เป็น 1,000.00 บาท
   String formatBalance(int amount) {
-    final nf = NumberFormat("#,###", "th_TH");
+    final nf = NumberFormat("#,##0.00", "th_TH");
     return '${nf.format(amount.toDouble())} บาท';
   }
 
