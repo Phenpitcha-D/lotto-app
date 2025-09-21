@@ -7,14 +7,15 @@ import 'package:lotto_app/model/response/user_login_post_res.dart';
 
 class LottolistPage extends StatefulWidget {
   final UserLoginRespon currentUser;
-  const LottolistPage({super.key, required this.currentUser});
+  final ValueNotifier<int> walletVN;
+  const LottolistPage({super.key, required this.currentUser, required this.walletVN});
 
   @override
   State<LottolistPage> createState() => _LottolistPageState();
 }
 
 class _LottolistPageState extends State<LottolistPage> {
-  final TextEditingController _searchCtrl = TextEditingController();
+  final TextEditingController searchCtrl = TextEditingController();
 
   late Future<List<LottoListRespon>> loadData;
   String query = "";
@@ -27,11 +28,11 @@ class _LottolistPageState extends State<LottolistPage> {
 
   @override
   void dispose() {
-    _searchCtrl.dispose();
+    searchCtrl.dispose();
     super.dispose();
   }
 
-  void _filter(String q) {
+  void filter(String q) {
     setState(() {
       query = q.trim();
     });
@@ -60,8 +61,8 @@ class _LottolistPageState extends State<LottolistPage> {
             ),
             padding: const EdgeInsets.symmetric(horizontal: 14),
             child: TextField(
-              controller: _searchCtrl,
-              onChanged: _filter,
+              controller: searchCtrl,
+              onChanged: filter,
               decoration: const InputDecoration(
                 icon: Icon(Icons.search, color: Colors.black54),
                 hintText: 'Search Lotto',
@@ -121,6 +122,13 @@ class _LottolistPageState extends State<LottolistPage> {
                       imageAsset: "assets/images/lotto_pool.png",
                       lid: filtered[i].lid,
                       token: widget.currentUser.token,
+                      walletVN: widget.walletVN,
+                      //  ส่ง callback มาจาก LottolistPage
+                      onBought: () {
+                        setState(() {
+                          loadData = loadLottos(); // รีโหลด FutureBuilder
+                        });
+                      },
                     );
                   }),
                 );

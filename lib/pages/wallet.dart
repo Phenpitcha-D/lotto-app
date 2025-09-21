@@ -93,9 +93,14 @@ class _WalletPageState extends State<WalletPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Expanded(
-                        child: Text(
-                          formatBalance(currentBalance),
-                          style: TextStyle(fontSize: 36),
+                        child: ValueListenableBuilder<int>(
+                          valueListenable: widget.walletVN,
+                          builder: (context, bal, _) {
+                            return Text(
+                              formatBalance(bal),
+                              style: TextStyle(fontSize: 36),
+                            );
+                          },
                         ),
                       ),
                     ],
@@ -557,7 +562,7 @@ class _WalletPageState extends State<WalletPage> {
             currentBalance = transRes.newBalance;
             widget.currentUser.user.wallet = transRes.newBalance; // <- สำคัญ
           });
-          widget.walletVN?.value = transRes.newBalance;
+          widget.walletVN.value = transRes.newBalance;
         }
       } catch (_) {}
 

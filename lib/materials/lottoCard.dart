@@ -13,6 +13,8 @@ class LottoCard extends StatefulWidget {
   final String? imageAsset;
   final int lid;
   final String token;
+  final VoidCallback? onBought; // callback หลังซื้อ
+  final ValueNotifier<int> walletVN;  //update เงินหลังซื้อ
 
   const LottoCard({
     super.key,
@@ -21,6 +23,7 @@ class LottoCard extends StatefulWidget {
     this.imageAsset,
     required this.lid,
     required this.token,
+    this.onBought, required this.walletVN,
   });
 
   @override
@@ -156,14 +159,10 @@ class _LottoCardState extends State<LottoCard> {
                                         Navigator.of(context).pop();
                                       },
                                       style: FilledButton.styleFrom(
-                                        backgroundColor: const Color(
-                                          0xFFCF3030,
-                                        ),
+                                        backgroundColor: const Color(0xFFCF3030),
                                         foregroundColor: Colors.white,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
+                                          borderRadius: BorderRadius.circular(10),
                                         ),
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 24,
@@ -181,14 +180,10 @@ class _LottoCardState extends State<LottoCard> {
                                         Navigator.of(context).pop();
                                       },
                                       style: FilledButton.styleFrom(
-                                        backgroundColor: const Color(
-                                          0xFF2196F3,
-                                        ),
+                                        backgroundColor: const Color(0xFF2196F3),
                                         foregroundColor: Colors.white,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
+                                          borderRadius: BorderRadius.circular(10),
                                         ),
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 24,
@@ -223,9 +218,8 @@ class _LottoCardState extends State<LottoCard> {
                             backgroundColor: const Color(0xFF2E7D32),
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(horizontal: 10),
-                            minimumSize: const Size(0, 50), // 🔹 บังคับสูง 50
-                            tapTargetSize: MaterialTapTargetSize
-                                .shrinkWrap, // 🔹 ป้องกัน overflow
+                            minimumSize: const Size(0, 50),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(6),
                             ),
@@ -315,6 +309,24 @@ class _LottoCardState extends State<LottoCard> {
                   actions: [
                     FilledButton(
                       onPressed: () {
+
+
+                         // ✅ update wallet balance
+                          if (data["newBalance"] != null) {
+                            // ถ้า backend ส่งยอดใหม่มา
+                            widget.walletVN.value =
+                                (data["newBalance"] as num).toInt();
+                          } else {
+                            // ถ้า backend ไม่ส่งยอดใหม่มา → หักราคาเอง
+                            widget.walletVN.value =
+                                widget.walletVN.value - widget.price;
+                          }
+
+                          
+                        // ถ้าซื้อสำเร็จ เรียก callback เพื่อ refresh LottolistPage
+                        if (res.success == true && widget.onBought != null) {
+                          widget.onBought!();
+                        }
                         Navigator.of(context).pop();
                       },
                       style: FilledButton.styleFrom(
