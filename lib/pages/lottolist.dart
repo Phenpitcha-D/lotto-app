@@ -23,6 +23,7 @@ class LottolistPage extends StatefulWidget {
 
 class _LottolistPageState extends State<LottolistPage> {
   final TextEditingController searchCtrl = TextEditingController();
+   final ScrollController scrollController = ScrollController();
 
   late Future<List<LottoListRespon>> loadData;
   String query = "";
@@ -36,6 +37,7 @@ class _LottolistPageState extends State<LottolistPage> {
   @override
   void dispose() {
     searchCtrl.dispose();
+    scrollController.dispose();
     super.dispose();
   }
 
@@ -57,7 +59,7 @@ class _LottolistPageState extends State<LottolistPage> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(30),
-              border: Border.all(color: Colors.black26, width: 1),
+              border: Border.all(color: Colors.black, width: 1),
               boxShadow: const [
                 BoxShadow(
                   color: Colors.black26,
@@ -71,7 +73,7 @@ class _LottolistPageState extends State<LottolistPage> {
               controller: searchCtrl,
               onChanged: filter,
               decoration: const InputDecoration(
-                icon: Icon(Icons.search, color: Colors.black54),
+                icon: Icon(Icons.search, color: Colors.black),
                 hintText: 'Search Lotto',
                 hintStyle: TextStyle(color: Colors.black45),
                 border: InputBorder.none,
@@ -152,28 +154,35 @@ class _LottolistPageState extends State<LottolistPage> {
                   );
                 }
 
-                return GridView.count(
-                  padding: const EdgeInsets.all(12),
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 2.05,
-                  children: List.generate(filtered.length, (i) {
-                    return LottoCard(
-                      number: filtered[i].lottoNumber,
-                      price: filtered[i].price,
-                      imageAsset: "assets/images/lotto_pool.png",
-                      lid: filtered[i].lid,
-                      token: widget.currentUser.token,
-                      walletVN: widget.walletVN,
-                      //  ส่ง callback มาจาก LottolistPage
-                      onBought: () {
-                        setState(() {
-                          loadData = loadLottos(); // รีโหลด FutureBuilder
-                        });
-                      },
-                    );
-                  }),
+                return Scrollbar(
+                  controller: scrollController,
+                  thickness: 5,
+                  thumbVisibility: true,
+                  trackVisibility: true,
+                  child: GridView.count(
+                    controller: scrollController,
+                    padding: const EdgeInsets.all(12),
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 2.05,
+                    children: List.generate(filtered.length, (i) {
+                      return LottoCard(
+                        number: filtered[i].lottoNumber,
+                        price: filtered[i].price,
+                        imageAsset: "assets/images/lotto_pool.png",
+                        lid: filtered[i].lid,
+                        token: widget.currentUser.token,
+                        walletVN: widget.walletVN,
+                        //  ส่ง callback มาจาก LottolistPage
+                        onBought: () {
+                          setState(() {
+                            loadData = loadLottos(); // รีโหลด FutureBuilder
+                          });
+                        },
+                      );
+                    }),
+                  ),
                 );
               },
             ),

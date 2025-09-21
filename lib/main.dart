@@ -16,6 +16,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
+        scrollbarTheme: ScrollbarThemeData(
+          thumbColor: WidgetStateProperty.all(const Color(0xFF6D6C6C)),
+          trackColor: WidgetStateProperty.all(Colors.white),
+          thickness: WidgetStateProperty.all(8),
+          radius: const Radius.circular(10),
+        ),
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color.fromARGB(255, 147, 8, 8),
         ),
