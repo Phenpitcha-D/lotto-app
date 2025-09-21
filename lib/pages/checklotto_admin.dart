@@ -371,7 +371,107 @@ class _RewardActionBarState extends State<_RewardActionBar> {
             elevation: 0,
             padding: const EdgeInsets.symmetric(vertical: 12),
           ),
-          onPressed: () {},
+          onPressed: () async {
+            final confirm = await showDialog<bool>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                title: const Text(
+                  "ยืนยันที่จะทำการรีเซ็ตระบบ ?",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                content: const Text(
+                  "เมื่อตกลงแล้วจะไม่สามารถแก้ไขได้\nข้อมูลทั้งหมดจะถูกลบ ยกเว้น admin",
+                ),
+                actionsPadding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 12,
+                ),
+                actionsAlignment: MainAxisAlignment.spaceEvenly,
+                actions: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                            ),
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: const Text("ยกเลิก"),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
+                            ),
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: const Text("ยืนยัน"),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+
+            if (confirm != true) return;
+
+            try {
+              var config = await Configuration.getConfig();
+              var url = config['apiEndpoint'];
+              var uri = Uri.parse("$url/api/admin/reset");
+
+              final resp = await http.delete(
+                uri,
+                headers: {
+                  "Content-Type": "application/json; charset=utf-8",
+                  "Authorization": "Bearer ${widget.currentUser.token}",
+                },
+              );
+
+              if (resp.statusCode == 200) {
+                final data = jsonDecode(resp.body);
+                if (data['success'] == true) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("รีเซ็ตระบบสำเร็จ")),
+                    );
+                  }
+                } else {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("รีเซ็ตไม่สำเร็จ: ${data['message']}"),
+                      ),
+                    );
+                  }
+                }
+              } else {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Error: ${resp.statusCode}")),
+                  );
+                }
+              }
+            } catch (e) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text("Exception: $e")));
+              }
+            }
+          },
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
