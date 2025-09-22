@@ -27,13 +27,13 @@ class CheckLottoPage extends StatefulWidget {
 }
 
 class _CheckLottoPageState extends State<CheckLottoPage> {
-  static const _cream = Color(0xFFF6E9CC);
-  static const _creamBorder = Color(0xFFE5CFA2);
-  static const _redStripe = Color(0xFFE24A4A);
-  static const _warnText = Color(0xFFCF3030);
+  static const cream = Color(0xFFF6E9CC);
+  static const creamBorder = Color(0xFFE5CFA2);
+  static const redStripe = Color(0xFFE24A4A);
+  static const warnText = Color(0xFFCF3030);
 
-  static const _leftAsset = 'assets/images/lotto_pool.png';
-  static const _rightAsset = 'assets/images/catcoin.png';
+  static const leftAsset = 'assets/images/lotto_pool.png';
+  static const rightAsset = 'assets/images/catcoin.png';
 
   late Future<UserOrdersRecordResponse> loadData;
   late Future<RewardResultResponse> loadReward;
@@ -139,51 +139,51 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                         ),
                       ),
                       const SizedBox(height: 5),
-                      _PrizeLargeCard(
-                        cream: _cream,
-                        creamBorder: _creamBorder,
-                        redStripe: _redStripe,
-                        warnText: _warnText,
+                      PrizeLargeCard(
+                        cream: cream,
+                        creamBorder: creamBorder,
+                        redStripe: redStripe,
+                        warnText: warnText,
                        number: r1?.lottoNumber ?? '',
                         prizeText: (r1?.bounty != null)
                             ? '*รางวัลละ ${r1!.bounty} บาท'
                             : '',
-                        leftAsset: _leftAsset,
-                        rightAsset: _rightAsset,
+                        leftAsset: leftAsset,
+                        rightAsset: rightAsset,
                       ),
                       const SizedBox(height: 10),
                       Row(
                         children: [
                           Expanded(
-                            child: _PrizeColumn(
+                            child: PrizeColumn(
                               title: 'รางวัลที่ 2',
-                              card: _PrizeSmallCard(
-                                cream: _cream,
-                                creamBorder: _creamBorder,
-                                redStripe: _redStripe,
+                              card: PrizeSmallCard(
+                                cream: cream,
+                                creamBorder: creamBorder,
+                                redStripe: redStripe,
                                 number: r2?.lottoNumber ?? '',
                                 prizeText: (r2?.bounty != null)
                                     ? '*รางวัลละ ${r2!.bounty} บาท'
                                     : '',
-                                leftAsset: _leftAsset,
-                                rightAsset: _rightAsset,
+                                leftAsset: leftAsset,
+                                rightAsset: rightAsset,
                               ),
                             ),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
-                            child: _PrizeColumn(
+                            child: PrizeColumn(
                               title: 'รางวัลที่ 3',
-                              card: _PrizeSmallCard(
-                                cream: _cream,
-                                creamBorder: _creamBorder,
-                                redStripe: _redStripe,
+                              card: PrizeSmallCard(
+                                cream: cream,
+                                creamBorder: creamBorder,
+                                redStripe: redStripe,
                                 number: r3?.lottoNumber ?? '',
                                 prizeText: (r3?.bounty != null)
                                     ? '*รางวัลละ ${r3!.bounty} บาท'
                                     : '',
-                                leftAsset: _leftAsset,
-                                rightAsset: _rightAsset,
+                                leftAsset: leftAsset,
+                                rightAsset: rightAsset,
                               ),
                             ),
                           ),
@@ -193,36 +193,36 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                       Row(
                         children: [
                           Expanded(
-                            child: _PrizeColumn(
+                            child: PrizeColumn(
                               title: 'รางวัลเลขท้าย 3 ตัว',
-                              card: _PrizeSmallCard(
-                                cream: _cream,
-                                creamBorder: _creamBorder,
-                                redStripe: _redStripe,
+                              card: PrizeSmallCard(
+                                cream: cream,
+                                creamBorder: creamBorder,
+                                redStripe: redStripe,
                                 number: tail(r1?.lottoNumber, 3),
                                 prizeText: (r4?.bounty != null)
                                     ? '*รางวัลละ ${r4!.bounty} บาท'
                                     : '',
-                                leftAsset: _leftAsset,
-                                rightAsset: _rightAsset,
+                                leftAsset: leftAsset,
+                                rightAsset: rightAsset,
                               ),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: _PrizeColumn(
+                            child: PrizeColumn(
                               title: 'รางวัลเลขท้าย 2 ตัว',
-                              card: _PrizeSmallCard(
-                                cream: _cream,
-                                creamBorder: _creamBorder,
-                                redStripe: _redStripe,
+                              card: PrizeSmallCard(
+                                cream: cream,
+                                creamBorder: creamBorder,
+                                redStripe: redStripe,
                                  number: tail(r5?.lottoNumber, 2),
                                 prizeText: (r5?.bounty != null)
                                     ? '*รางวัลละ ${r5!.bounty} บาท'
                                     : '',
 
-                                leftAsset: _leftAsset,
-                                rightAsset: _rightAsset,
+                                leftAsset: leftAsset,
+                                rightAsset: rightAsset,
                               ),
                             ),
                           ),
@@ -301,10 +301,10 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                                   child: Row(
                                     children: [
                                       Expanded(
-                                        child: _MyTicketCard(
-                                          cream: _cream,
-                                          creamBorder: _creamBorder,
-                                          redStripe: _redStripe,
+                                        child: MyTicketCard(
+                                          cream: cream,
+                                          creamBorder: creamBorder,
+                                          redStripe: redStripe,
                                           lid: items[i].lid,
                                           number: items[i].lottoNumber,
                                           price: items[i].purchasePrice,
@@ -317,10 +317,10 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                                       const SizedBox(width: 12),
                                       if (i + 1 < items.length)
                                         Expanded(
-                                          child: _MyTicketCard(
-                                            cream: _cream,
-                                            creamBorder: _creamBorder,
-                                            redStripe: _redStripe,
+                                          child: MyTicketCard(
+                                            cream: cream,
+                                            creamBorder: creamBorder,
+                                            redStripe: redStripe,
                                             lid: items[i + 1].lid,
                                             number: items[i + 1].lottoNumber,
                                             price: items[i + 1].purchasePrice,
@@ -395,10 +395,10 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
 
 /* --------------------------------- helpers -------------------------------- */
 
-class _PrizeColumn extends StatelessWidget {
+class PrizeColumn extends StatelessWidget {
   final String title;
   final Widget card;
-  const _PrizeColumn({required this.title, required this.card});
+  const PrizeColumn({required this.title, required this.card});
 
   @override
   Widget build(BuildContext context) => Column(
@@ -411,10 +411,10 @@ class _PrizeColumn extends StatelessWidget {
   );
 }
 
-class _PrizeLargeCard extends StatelessWidget {
+class PrizeLargeCard extends StatelessWidget {
   final Color cream, creamBorder, redStripe, warnText;
   final String number, prizeText, leftAsset, rightAsset;
-  const _PrizeLargeCard({
+  const PrizeLargeCard({
     required this.cream,
     required this.creamBorder,
     required this.redStripe,
@@ -424,7 +424,7 @@ class _PrizeLargeCard extends StatelessWidget {
     required this.leftAsset,
     required this.rightAsset,
   });
-
+ 
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -441,10 +441,10 @@ class _PrizeLargeCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  _circleImage(leftAsset, 56),
+                  circleImage(leftAsset, 56),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: _pillNumberInline(
+                    child: pillNumberInline(
                       number: number,
                       rightAsset: rightAsset,
                       fontSize: 20,
@@ -488,11 +488,11 @@ class _PrizeLargeCard extends StatelessWidget {
   }
 }
 
-class _PrizeSmallCard extends StatelessWidget {
+class PrizeSmallCard extends StatelessWidget {
   final Color cream, creamBorder, redStripe;
   final String number, prizeText, leftAsset, rightAsset;
 
-  const _PrizeSmallCard({
+  const PrizeSmallCard({
     required this.cream,
     required this.creamBorder,
     required this.redStripe,
@@ -525,7 +525,7 @@ class _PrizeSmallCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  _circleImage(leftAsset, 42),
+                  circleImage(leftAsset, 42),
                   const SizedBox(width: 4),
                   Expanded(
                     child: _pillNumberInlineSpaced(
@@ -574,7 +574,7 @@ class _PrizeSmallCard extends StatelessWidget {
   }
 }
 
-class _MyTicketCard extends StatelessWidget {
+class MyTicketCard extends StatelessWidget {
   final Color cream, creamBorder, redStripe;
   final String number;
   final num price;
@@ -584,7 +584,7 @@ class _MyTicketCard extends StatelessWidget {
   final int lid;
   final ValueNotifier<int> walletVN;
 
-  const _MyTicketCard({
+  const MyTicketCard({
     required this.cream,
     required this.creamBorder,
     required this.redStripe,
@@ -619,13 +619,13 @@ class _MyTicketCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  _circleIcon(46),
+                  circleIcon(46),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _PillText(number, fontSize: 11, padV: 6),
+                        PillText(number, fontSize: 11, padV: 6),
                         const SizedBox(height: 5),
                         Text('ราคา : ${price.toString()} บาท'),
                         const SizedBox(height: 2),
@@ -1091,7 +1091,7 @@ void showErrorDialog(
 
 /* ------------------------------ leaf widgets ------------------------------ */
 
-Widget _circleIcon(double size) => Container(
+Widget circleIcon(double size) => Container(
   width: size,
   height: size,
   decoration: const BoxDecoration(
@@ -1107,7 +1107,7 @@ Widget _circleIcon(double size) => Container(
   ),
 );
 
-Widget _circleImage(String asset, double size) => Container(
+Widget circleImage(String asset, double size) => Container(
   width: size,
   height: size,
   decoration: const BoxDecoration(
@@ -1123,11 +1123,11 @@ Widget _circleImage(String asset, double size) => Container(
   ),
 );
 
-class _PillText extends StatelessWidget {
+class PillText extends StatelessWidget {
   final String text;
   final double fontSize;
   final double padV;
-  const _PillText(this.text, {this.fontSize = 14, this.padV = 4});
+  const PillText(this.text, {this.fontSize = 14, this.padV = 4});
   @override
   Widget build(BuildContext context) => Container(
     padding: EdgeInsets.symmetric(horizontal: 12, vertical: padV),
@@ -1150,7 +1150,7 @@ class _PillText extends StatelessWidget {
   );
 }
 
-Widget _pillNumberInline({
+Widget pillNumberInline ({
   required String number,
   required String rightAsset,
   double fontSize = 48,

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lotto_app/model/response/user_login_post_res.dart';
-import 'package:lotto_app/pages/checklotto.dart';
-import 'package:lotto_app/pages/checklotto_admin.dart';
+import 'package:lotto_app/pages/temp.dart';
 import 'package:lotto_app/pages/lottolist.dart';
 import 'package:lotto_app/pages/lottolist_admin.dart';
 import 'package:lotto_app/pages/myScaffold.dart';
@@ -36,11 +35,7 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   Widget buildChild(String role) {
     if (tab == 0) {
-      if (role == 'admin') {
-        return ChecklottoAdmin(currentUser: widget.currentUser);
-      } else {
-        return CheckLottoPage(currentUser: widget.currentUser, walletVN: walletVN,);
-      }
+      return CheckLottoPage(currentUser: widget.currentUser,walletVN: walletVN,);
     } else if (tab == 1) {
       if (role == 'admin' && showAdminPage) {
         // ✅ ถ้า admin และกดปุ่มจาก LottolistPage → เปิดหน้า LottolistAdminPage
