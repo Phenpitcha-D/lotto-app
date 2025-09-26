@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lotto_app/model/response/user_login_post_res.dart';
-import 'package:lotto_app/pages/temp.dart';
+import 'package:lotto_app/pages/checklotto.dart';
 import 'package:lotto_app/pages/lottolist.dart';
 import 'package:lotto_app/pages/lottolist_admin.dart';
 import 'package:lotto_app/pages/myScaffold.dart';

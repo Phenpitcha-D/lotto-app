@@ -34,7 +34,7 @@ class _LoginState extends State<Login> {
     Configuration.getConfig().then((config) {
       if (!mounted) return;
       setState(() {
-        url = config['apiEndpoint'] ?? '';
+        url = config['apiEndpoint'].toString().trim() ?? '';
       });
     });
   }

@@ -23,7 +23,7 @@ class LottolistPage extends StatefulWidget {
 
 class _LottolistPageState extends State<LottolistPage> {
   final TextEditingController searchCtrl = TextEditingController();
-   final ScrollController scrollController = ScrollController();
+  final ScrollController scrollController = ScrollController();
 
   late Future<List<LottoListRespon>> loadData;
   String query = "";
@@ -154,34 +154,47 @@ class _LottolistPageState extends State<LottolistPage> {
                   );
                 }
 
-                return Scrollbar(
-                  controller: scrollController,
-                  thickness: 5,
-                  thumbVisibility: true,
-                  trackVisibility: true,
-                  child: GridView.count(
+                // ✅ RefreshIndicator ต้องเป็น ancestor ของ scrollable จริง
+                return RefreshIndicator.adaptive(
+                  onRefresh: reload,
+                  edgeOffset: 4,
+                  notificationPredicate: (n) => n.depth == 0,
+                  child: Scrollbar(
                     controller: scrollController,
-                    padding: const EdgeInsets.all(12),
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 2.05,
-                    children: List.generate(filtered.length, (i) {
-                      return LottoCard(
-                        number: filtered[i].lottoNumber,
-                        price: filtered[i].price,
-                        imageAsset: "assets/images/lotto_pool.png",
-                        lid: filtered[i].lid,
-                        token: widget.currentUser.token,
-                        walletVN: widget.walletVN,
-                        //  ส่ง callback มาจาก LottolistPage
-                        onBought: () {
-                          setState(() {
-                            loadData = loadLottos(); // รีโหลด FutureBuilder
-                          });
-                        },
-                      );
-                    }),
+                    thickness: 5,
+                    thumbVisibility: true,
+                    trackVisibility: true,
+                    child: GridView.count(
+                      controller: scrollController,
+                      // สำคัญ: ให้ดึงรีเฟรชได้เสมอ แม้ไอเท็มไม่เต็มจอ
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(12),
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      childAspectRatio: 2.05,
+                      children: List.generate(filtered.length, (i) {
+                        return LottoCard(
+                          number: filtered[i].lottoNumber,
+                          price: filtered[i].price,
+                          imageAsset: "assets/images/lotto_pool.png",
+                          lid: filtered[i].lid,
+                          token: widget.currentUser.token,
+                          walletVN: widget.walletVN,
+                          // ซื้อเสร็จให้รีโหลดทันที
+                          onBought: () async {
+                            await reload();
+                            if (scrollController.hasClients) {
+                              scrollController.animateTo(
+                                0,
+                                duration: const Duration(milliseconds: 250),
+                                curve: Curves.easeOut,
+                              );
+                            }
+                          },
+                        );
+                      }),
+                    ),
                   ),
                 );
               },
@@ -190,6 +203,15 @@ class _LottolistPageState extends State<LottolistPage> {
         ],
       ),
     );
+  }
+
+  // ⬇️ แก้หลัก: ให้ onRefresh “ยิงโหลดใหม่” จริง ๆ และ await ให้จบก่อน
+  Future<void> reload() async {
+    final future = loadLottos();
+    setState(() {
+      loadData = future; // สั่ง FutureBuilder โหลดใหม่
+    });
+    await future; // ให้ RefreshIndicator รู้ว่าการรีเฟรชจบแล้ว -> หยุดสปิน
   }
 
   Future<List<LottoListRespon>> loadLottos() async {
