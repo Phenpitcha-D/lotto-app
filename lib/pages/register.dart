@@ -19,7 +19,7 @@ class Register extends StatefulWidget {
 
 class _RegisterState extends State<Register> {
   String url = '';
-  bool _isLoading = false;
+  bool isLoading = false;
 
   // controllers
   final emailCtl = TextEditingController();
@@ -51,7 +51,7 @@ class _RegisterState extends State<Register> {
   }
 
   // -------------------- helpers --------------------
-  bool _looksLikeDuplicate(String? msg) {
+  bool looksLikeDuplicate(String? msg) {
     final m = (msg ?? '').toLowerCase();
     return m.contains('ใช้งานแล้ว') ||
         m.contains('already in use') ||
@@ -61,8 +61,8 @@ class _RegisterState extends State<Register> {
         m.contains('constraint failed');
   }
 
-  void _showDuplicateGeneric() {
-    _showError('อีเมลหรือชื่อผู้ใช้นี้มีผู้ใช้งานแล้ว');
+  void showDuplicateGeneric() {
+    showError('อีเมลหรือชื่อผู้ใช้นี้มีผู้ใช้งานแล้ว');
   }
   // -------------------------------------------------
 
@@ -265,7 +265,7 @@ class _RegisterState extends State<Register> {
                         child: SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: (_isLoading) ? null : _onRegisterPressed,
+                            onPressed: (isLoading) ? null : onRegisterPressed,
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 15),
                               shape: RoundedRectangleBorder(
@@ -274,7 +274,7 @@ class _RegisterState extends State<Register> {
                               backgroundColor: Colors.black,
                               disabledBackgroundColor: Colors.black54,
                             ),
-                            child: _isLoading
+                            child: isLoading
                                 ? const SizedBox(
                                     width: 22,
                                     height: 22,
@@ -333,9 +333,9 @@ class _RegisterState extends State<Register> {
   }
 
   // ยิง API + แยกผลลัพธ์แบบปลอดภัย
-  Future<void> _onRegisterPressed() async {
+  Future<void> onRegisterPressed() async {
     if (url.isEmpty) {
-      _showError('ระบบกำลังเตรียมการเชื่อมต่อ โปรดลองใหม่อีกครั้ง');
+      showError('ระบบกำลังเตรียมการเชื่อมต่อ โปรดลองใหม่อีกครั้ง');
       return;
     }
 
@@ -346,38 +346,38 @@ class _RegisterState extends State<Register> {
     final walletText = walletCtl.text.trim();
 
     if (email.isEmpty) {
-      _showError('กรุณากรอกอีเมล');
+      showError('กรุณากรอกอีเมล');
       return;
     }
     final emailOk = RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(email);
     if (!emailOk) {
-      _showError('รูปแบบอีเมลไม่ถูกต้อง');
+      showError('รูปแบบอีเมลไม่ถูกต้อง');
       return;
     }
     if (username.isEmpty) {
-      _showError('กรุณากรอกชื่อผู้ใช้');
+      showError('กรุณากรอกชื่อผู้ใช้');
       return;
     }
     if (password.isEmpty) {
-      _showError('กรุณากรอกรหัสผ่าน');
+      showError('กรุณากรอกรหัสผ่าน');
       return;
     }
     if (password.length < 6) {
-      _showError('รหัสผ่านต้องยาวอย่างน้อย 6 ตัวอักษร');
+      showError('รหัสผ่านต้องยาวอย่างน้อย 6 ตัวอักษร');
       return;
     }
     if (confirm != password) {
-      _showError('รหัสผ่านยืนยันไม่ตรงกัน');
+      showError('รหัสผ่านยืนยันไม่ตรงกัน');
       return;
     }
 
     final wallet = walletText.isEmpty ? 0 : (int.tryParse(walletText) ?? -1);
     if (wallet == -1) {
-      _showError('Amount ต้องเป็นตัวเลขเท่านั้น');
+      showError('Amount ต้องเป็นตัวเลขเท่านั้น');
       return;
     }
 
-    setState(() => _isLoading = true);
+    setState(() => isLoading = true);
 
     try {
       final request = UserRegisterRequest(
@@ -416,7 +416,7 @@ class _RegisterState extends State<Register> {
 
       if (success) {
         if (!mounted) return;
-        await _showSuccess('สมัครสมาชิกสำเร็จ ล็อกอินเข้าสู่ระบบได้เลย');
+        await showSuccess('สมัครสมาชิกสำเร็จ ล็อกอินเข้าสู่ระบบได้เลย');
         if (!mounted) return;
         Navigator.push(
           context,
@@ -424,31 +424,31 @@ class _RegisterState extends State<Register> {
         );
         return;
       } else {
-        if (_looksLikeDuplicate(message)) {
-          _showDuplicateGeneric(); // “อีเมลหรือชื่อผู้ใช้นี้มีผู้ใช้งานแล้ว”
+        if (looksLikeDuplicate(message)) {
+          showDuplicateGeneric(); // “อีเมลหรือชื่อผู้ใช้นี้มีผู้ใช้งานแล้ว”
         } else if (resp.statusCode == 400) {
-          _showError(message); // validation อื่น ๆ
+          showError(message); // validation อื่น ๆ
         } else {
-          _showError(message); // ข้อผิดพลาดทั่วไป
+          showError(message); // ข้อผิดพลาดทั่วไป
         }
       }
     } on TimeoutException {
-      _showError('เครือข่ายช้า หรือเซิร์ฟเวอร์ไม่ตอบสนอง โปรดลองใหม่');
+      showError('เครือข่ายช้า หรือเซิร์ฟเวอร์ไม่ตอบสนอง โปรดลองใหม่');
     } catch (e, st) {
       log('Register error: $e', stackTrace: st);
-      _showError('เกิดข้อผิดพลาดไม่ทราบสาเหตุ โปรดลองอีกครั้ง');
+      showError('เกิดข้อผิดพลาดไม่ทราบสาเหตุ โปรดลองอีกครั้ง');
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
   // คง method เดิมไว้เพื่อความเข้ากัน
   void register() {
-    _onRegisterPressed();
+    onRegisterPressed();
   }
 
   // Dialog helpers
-  Future<void> _showSuccess(String msg) {
+  Future<void> showSuccess(String msg) {
     return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -482,7 +482,7 @@ class _RegisterState extends State<Register> {
     );
   }
 
-  void _showError(String msg) {
+  void showError(String msg) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
