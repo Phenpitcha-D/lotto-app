@@ -24,7 +24,8 @@ class LottoCard extends StatefulWidget {
     required this.lid,
     required this.token,
     this.onBought,
-    required this.walletVN, required this.currentUser,
+    required this.walletVN,
+    required this.currentUser,
   });
 
   @override
@@ -142,11 +143,19 @@ class _LottoCardState extends State<LottoCard> {
                       child: SizedBox(
                         height: 50,
                         child: ElevatedButton.icon(
-                          onPressed: () {
+                          onPressed: () async {
                             if (widget.currentUser.user.role == 'admin') {
-    _showError("แอดมินไม่สามารถซื้อล็อตโต้ที่ตัวเองวางขายได้");
-    return;
-  }
+                              _showError(
+                                "แอดมินไม่สามารถซื้อล็อตโต้ที่ตัวเองวางขายได้",
+                              );
+                              return;
+                            }
+
+                            final closed = await _isRewardAlreadyDrawn();
+                            if (closed) {
+                              _showError("ไม่สามารถซื้อได้ เพราะออกรางวัลแล้ว");
+                              return;
+                            }
 
                             showDialog(
                               context: context,
@@ -424,6 +433,47 @@ class _LottoCardState extends State<LottoCard> {
         ],
       ),
     );
+  }
+
+  Future<bool> _isRewardAlreadyDrawn() async {
+    try {
+      final config = await Configuration.getConfig();
+      final api = config['apiEndpoint'];
+      final uri = Uri.parse('$api/api/lottos/results');
+
+      final res = await http.get(
+        uri,
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Authorization": "Bearer ${widget.currentUser.token}",
+        },
+      );
+
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        final body = jsonDecode(utf8.decode(res.bodyBytes));
+
+        // โครงสร้างแบบ List และมีข้อมูล → ถือว่าออกรางวัลแล้ว
+        if (body is List && body.isNotEmpty) return true;
+
+        // โครงสร้างแบบ Map → พยายามเดา field ทั่วไป
+        if (body is Map<String, dynamic>) {
+          if (body['results'] is List && (body['results'] as List).isNotEmpty)
+            return true;
+          if (body['data'] is List && (body['data'] as List).isNotEmpty)
+            return true;
+          if (body['isClosed'] == true ||
+              body['closed'] == true ||
+              body['hasResult'] == true) {
+            return true;
+          }
+        }
+        return false; // ยังไม่พบหลักฐานว่าปิดรอบ
+      }
+
+      return false; // สถานะอื่น ๆ → อย่าบล็อกผิดพลาด
+    } catch (_) {
+      return false; // เช็คไม่ได้ → อย่าบล็อก
+    }
   }
 }
 
