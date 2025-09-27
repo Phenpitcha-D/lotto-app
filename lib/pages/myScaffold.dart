@@ -51,7 +51,7 @@ class _MyscaffoldState extends State<Myscaffold> {
     final topPad = MediaQuery.of(context).padding.top;
     final bottomPad = MediaQuery.of(context).padding.bottom;
     final bool isAdmin =
-        (widget.currentUser.user.role ?? '').trim().toLowerCase() == 'admin';
+        (widget.currentUser.user.role).trim().toLowerCase() == 'admin';
 
     return Scaffold(
       extendBody: true,

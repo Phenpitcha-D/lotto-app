@@ -282,6 +282,80 @@ class _LottoCardCheckState extends State<LottoCardCheck> {
     );
   }
 
+  Future<bool> _isRewardDrawn() async {
+    try {
+      final config = await Configuration.getConfig();
+      final base = config['apiEndpoint'];
+      final uri = Uri.parse('$base/api/lottos/results');
+
+      final res = await http.get(
+        uri,
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Authorization": "Bearer ${widget.currentUser.token}",
+        },
+      );
+
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        final body = jsonDecode(utf8.decode(res.bodyBytes));
+        if (body is List && body.isNotEmpty) return true;
+        if (body is Map<String, dynamic>) {
+          if (body['results'] is List && (body['results'] as List).isNotEmpty)
+            return true;
+          if (body['data'] is List && (body['data'] as List).isNotEmpty)
+            return true;
+          if (body['hasResult'] == true ||
+              body['isClosed'] == true ||
+              body['closed'] == true) {
+            return true;
+          }
+        }
+        return false;
+      }
+      return false; // อย่าบล็อกผิด ๆ
+    } catch (_) {
+      return false; // เช็คไม่ได้ = ถือว่ายังไม่ปิด
+    }
+  }
+
+  void showNoRewardYetDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: Color(0xFF2196F3), width: 1.5),
+        ),
+        title: Center(
+          child: const Text(
+            "ไม่สามารถตรวจรางวัลได้",
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+        ),
+        content: const Text(
+          "ยังไม่มีการออกรางวัลล็อตโต้",
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF2196F3),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+            ),
+            child: const Text("ปิด", style: TextStyle(fontSize: 16)),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ----------------------------- Loads (เดิม) -----------------------------
 
   Future<UserOrdersRecordResponse> LoadOrdersRecord() async {
@@ -339,8 +413,15 @@ class _LottoCardCheckState extends State<LottoCardCheck> {
         );
       }
 
+      // ✅ NEW: ยังไม่ออกรางวัล → แจ้งและหยุด
+      final drawn = await _isRewardDrawn();
+      if (!drawn) {
+        showNoRewardYetDialog(context);
+        return;
+      }
+
       final res = await http.get(
-        Uri.parse("$url/api/lottos/prizes/$lid"), // ใช้ getter lid
+        Uri.parse("$url/api/lottos/prizes/$lid"),
         headers: {
           "Content-Type": "application/json; charset=utf-8",
           "Authorization": "Bearer ${widget.currentUser.token}",
