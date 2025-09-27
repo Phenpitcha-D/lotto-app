@@ -174,6 +174,7 @@ class _LottolistPageState extends State<LottolistPage> {
                       childAspectRatio: 2.05,
                       children: List.generate(filtered.length, (i) {
                         return LottoCard(
+                          currentUser: widget.currentUser,
                           number: filtered[i].lottoNumber,
                           price: filtered[i].price,
                           imageAsset: "assets/images/lotto_pool.png",

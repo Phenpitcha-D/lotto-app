@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:lotto_app/config/config.dart';
 import 'package:lotto_app/model/request/user_lottobuy_post_req.dart';
+import 'package:lotto_app/model/response/user_login_post_res.dart';
 
 class LottoCard extends StatefulWidget {
   final String number;
@@ -13,6 +14,7 @@ class LottoCard extends StatefulWidget {
   final String token;
   final VoidCallback? onBought; // callback หลังซื้อ
   final ValueNotifier<int> walletVN; //update เงินหลังซื้อ
+  final UserLoginRespon currentUser;
 
   const LottoCard({
     super.key,
@@ -22,7 +24,7 @@ class LottoCard extends StatefulWidget {
     required this.lid,
     required this.token,
     this.onBought,
-    required this.walletVN,
+    required this.walletVN, required this.currentUser,
   });
 
   @override
@@ -141,6 +143,11 @@ class _LottoCardState extends State<LottoCard> {
                         height: 50,
                         child: ElevatedButton.icon(
                           onPressed: () {
+                            if (widget.currentUser.user.role == 'admin') {
+    _showError("แอดมินไม่สามารถซื้อล็อตโต้ที่ตัวเองวางขายได้");
+    return;
+  }
+
                             showDialog(
                               context: context,
                               builder: (BuildContext context) {
