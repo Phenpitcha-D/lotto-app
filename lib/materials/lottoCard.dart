@@ -1,11 +1,9 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:lotto_app/config/config.dart';
 import 'package:lotto_app/model/request/user_lottobuy_post_req.dart';
-import 'package:lotto_app/model/response/user_lottobuy_get_res.dart';
 
 class LottoCard extends StatefulWidget {
   final String number;

@@ -4,7 +4,6 @@ import 'package:lotto_app/config/config.dart';
 import 'package:lotto_app/materials/lottoCard.dart';
 import 'package:lotto_app/model/response/lottolist_res.dart';
 import 'package:lotto_app/model/response/user_login_post_res.dart';
-import 'package:lotto_app/pages/lottolist_admin.dart';
 
 class LottolistPage extends StatefulWidget {
   final UserLoginRespon currentUser;

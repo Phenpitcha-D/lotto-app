@@ -362,10 +362,6 @@ class _RegisterState extends State<Register> {
       showError('กรุณากรอกรหัสผ่าน');
       return;
     }
-    if (password.length < 6) {
-      showError('รหัสผ่านต้องยาวอย่างน้อย 6 ตัวอักษร');
-      return;
-    }
     if (confirm != password) {
       showError('รหัสผ่านยืนยันไม่ตรงกัน');
       return;

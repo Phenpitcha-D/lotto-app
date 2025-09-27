@@ -7,7 +7,6 @@ import 'package:lotto_app/config/config.dart';
 import 'package:lotto_app/model/response/prize_res.dart';
 import 'package:lotto_app/model/response/reward_get_res.dart';
 import 'package:lotto_app/model/response/user_login_post_res.dart';
-import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:lotto_app/model/response/user_orderrecord_get_res.dart';
 

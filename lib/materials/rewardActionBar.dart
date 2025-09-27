@@ -298,7 +298,6 @@ class _RewardActionBarState extends State<RewardActionBar> {
 }
 
 extension on Future<Map<String, dynamic>> {
-  operator [](String other) {}
 }
 
 // ดรอปดาวน์

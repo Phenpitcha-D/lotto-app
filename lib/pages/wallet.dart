@@ -706,7 +706,7 @@ class _WalletPageState extends State<WalletPage> {
             currentBalance = transRes.newBalance;
             widget.currentUser.user.wallet = transRes.newBalance; // <- สำคัญ
           });
-          widget.walletVN?.value = transRes.newBalance;
+          widget.walletVN.value = transRes.newBalance;
         }
       } catch (_) {}
 
@@ -868,9 +868,9 @@ class _WalletPageState extends State<WalletPage> {
         if (newBal != null && mounted) {
           setState(() {
             currentBalance = newBal!;
-            widget.currentUser.user.wallet = newBal!; // <- สำคัญ
+            widget.currentUser.user.wallet = newBal; // <- สำคัญ
           });
-          widget.walletVN?.value = newBal;
+          widget.walletVN.value = newBal;
         }
       } catch (_) {}
 
