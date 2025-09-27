@@ -9,8 +9,14 @@ import 'package:lotto_app/model/response/user_login_post_res.dart';
 
 class RewardActionBar extends StatefulWidget {
   final UserLoginRespon currentUser;
+  final Future<void> Function()? onReload;
 
-  const RewardActionBar({super.key, required this.currentUser});
+  const RewardActionBar({
+    super.key,
+    required this.currentUser,
+    required this.onReload,
+  });
+
   @override
   State<RewardActionBar> createState() => _RewardActionBarState();
 }
@@ -23,8 +29,159 @@ class _RewardActionBarState extends State<RewardActionBar> {
   ];
   String selected = 'เลือกการสุ่มรางวัล';
 
+  bool _busy = false; // ✅ กันกดซ้ำ/ปิดปุ่มระหว่างเรียก API
+
+  // ---------- helpers: pre-check existence ----------
+  Future<bool> _hasAnyLotto() async {
+    try {
+      final config = await Configuration.getConfig();
+      final url = config['apiEndpoint'];
+      final uri = Uri.parse('$url/api/lottos');
+      final resp = await http
+          .get(
+            uri,
+            headers: {
+              "Content-Type": "application/json; charset=utf-8",
+              "Authorization": "Bearer ${widget.currentUser.token}",
+            },
+          )
+          .timeout(const Duration(seconds: 12));
+
+      if (resp.statusCode >= 200 && resp.statusCode < 300) {
+        final body = utf8.decode(resp.bodyBytes);
+        final data = jsonDecode(body);
+        if (data is List) return data.isNotEmpty;
+        if (data is Map && data['data'] is List) {
+          return (data['data'] as List).isNotEmpty;
+        }
+      }
+      // ถ้าเช็คไม่ได้ ให้ถือว่า "อาจมี" เพื่อไม่บล็อกผิดพลาด
+      return true;
+    } catch (_) {
+      return true;
+    }
+  }
+
+  Future<bool> _hasPurchasedLotto() async {
+    // พยายามเช็ค /api/lottos/purchased ถ้ามี
+    try {
+      final config = await Configuration.getConfig();
+      final url = config['apiEndpoint'];
+      final uri = Uri.parse('$url/api/lottos/purchased');
+      final resp = await http
+          .get(
+            uri,
+            headers: {
+              "Content-Type": "application/json; charset=utf-8",
+              "Authorization": "Bearer ${widget.currentUser.token}",
+            },
+          )
+          .timeout(const Duration(seconds: 12));
+
+      if (resp.statusCode >= 200 && resp.statusCode < 300) {
+        final body = utf8.decode(resp.bodyBytes);
+        final data = jsonDecode(body);
+        if (data is List) return data.isNotEmpty;
+        if (data is Map && data['data'] is List) {
+          return (data['data'] as List).isNotEmpty;
+        }
+        // โครงสร้างไม่ชัด → ไม่บล็อก
+        return true;
+      }
+
+      // 404/ไม่รองรับ → ไม่บล็อก ปล่อยให้เซิร์ฟเวอร์ตัดสิน
+      return true;
+    } catch (_) {
+      // เช็คไม่ได้ → ไม่บล็อก
+      return true;
+    }
+  }
+
+  // ---------- draw core ----------
+  Future<bool> _drawRewardInternal() async {
+  final config = await Configuration.getConfig();
+  final url = config['apiEndpoint'];
+
+  // pre-check (กันเคสไม่มีลอตเตอรี่หรือไม่มีที่ถูกซื้อ)
+  final isPurchased = selected == 'สุ่มจากลอตเตอรี่ที่ขายไปแล้ว';
+  final canDraw = isPurchased ? await _hasPurchasedLotto() : await _hasAnyLotto();
+  if (!canDraw) {
+    if (!mounted) return false;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isPurchased
+              ? 'ไม่มีลอตเตอรี่ที่ถูกซื้อ จึงไม่สามารถออกรางวัลจากที่ขายไปแล้วได้'
+              : 'ไม่มีลอตเตอรี่ในระบบ จึงไม่สามารถออกรางวัลได้',
+        ),
+      ),
+    );
+    return false;
+  }
+
+  final endpoint = isPurchased
+      ? '$url/api/lottos/draw/purchased'
+      : '$url/api/lottos/draw/all';
+
+  final uri = Uri.parse(endpoint);
+  final resp = await http
+      .get(
+        uri,
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Authorization": "Bearer ${widget.currentUser.token}",
+        },
+      )
+      .timeout(const Duration(seconds: 20));
+
+  final bodyStr = utf8.decode(resp.bodyBytes);
+
+  // ⛔️ 1) HTTP error → แสดงสถานะตามเดิม
+  if (resp.statusCode < 200 || resp.statusCode >= 300) {
+    String msg;
+    try {
+      final m = jsonDecode(bodyStr) as Map<String, dynamic>;
+      msg = (m['message'] ?? 'ออกรางวัลไม่สำเร็จ (${resp.statusCode})').toString();
+    } catch (_) {
+      msg = 'ออกรางวัลไม่สำเร็จ (${resp.statusCode})';
+    }
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    }
+    return false;
+  }
+
+  // ✅ 2) HTTP 2xx แต่ผลลัพธ์ธุรกิจไม่ผ่าน → อ่าน success/message แล้วปฏิเสธ
+  try {
+    final decoded = jsonDecode(bodyStr);
+    if (decoded is Map<String, dynamic>) {
+      final success = decoded['success'];
+      final message = (decoded['message'] ?? '').toString();
+
+      // กรณีอย่าง: {"success":false,"message":"ยังไม่มีเลขที่ถูกซื้อเพียงพอ"}
+      if (success is bool && success == false) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message.isNotEmpty ? message : 'ออกรางวัลไม่สำเร็จ')),
+          );
+        }
+        return false;
+      }
+    }
+  } catch (_) {
+    // ถอดรหัสไม่ได้ก็ไม่เป็นไร ให้ถือว่าเซิร์ฟเวอร์ผ่าน (กรณีเก่า)
+  }
+
+  log('DrawReward OK: $bodyStr');
+  return true;
+}
+
+
+  // ---------- UI ----------
   @override
   Widget build(BuildContext context) {
+    final drawDisabled = selected == modes.first || _busy; // ยังไม่เลือก/กำลังทำงาน
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -43,75 +200,78 @@ class _RewardActionBarState extends State<RewardActionBar> {
             elevation: 0,
             padding: const EdgeInsets.symmetric(vertical: 12),
           ),
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  backgroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    side: const BorderSide(
-                      color: Color(0xFF2196F3),
-                      width: 1.5,
-                    ),
-                  ),
-                  content: const Text(
-                    "ยืนยันที่จะทำการสุ่มรางวัล ? เมื่อกดยืนยันแล้วจะไม่สามารถแก้ไขได้",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  actionsAlignment: MainAxisAlignment.spaceEvenly,
-                  actions: [
-                    FilledButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFFCF3030),
-                        foregroundColor: Colors.white,
+          onPressed: drawDisabled
+              ? null
+              : () {
+                  showDialog(
+                    context: context,
+                    barrierDismissible:
+                        false, // ✅ กันกดหลุดระหว่างกำลังยืนยัน
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        backgroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
+                          side: const BorderSide(
+                            color: Color(0xFF2196F3),
+                            width: 1.5,
+                          ),
                         ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
+                        content: const Text(
+                          "ยืนยันที่จะทำการสุ่มรางวัล ? เมื่อกดยืนยันแล้วจะไม่สามารถแก้ไขได้",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 16),
                         ),
-                      ),
-                      child: const Text(
-                        "ยกเลิก",
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ),
-                    FilledButton(
-                      onPressed: DrawReward,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF2196F3),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                      ),
-                      child: const Text(
-                        "ยืนยัน",
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-          child: const Row(
+                        actionsAlignment: MainAxisAlignment.spaceEvenly,
+                        actions: [
+                          FilledButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFFCF3030),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                            ),
+                            child: const Text("ยกเลิก",
+                                style: TextStyle(fontSize: 16)),
+                          ),
+                          FilledButton(
+                            onPressed: _busy ? null : DrawReward,
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFF2196F3),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                            ),
+                            child: const Text("ยืนยัน",
+                                style: TextStyle(fontSize: 16)),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.casino_outlined, size: 18),
-              SizedBox(width: 8),
-              Text('สุ่มรางวัล', style: TextStyle(fontWeight: FontWeight.w700)),
+              const Icon(Icons.casino_outlined, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                _busy ? 'กำลังสุ่ม…' : 'สุ่มรางวัล',
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
             ],
           ),
         ),
@@ -126,113 +286,129 @@ class _RewardActionBarState extends State<RewardActionBar> {
             elevation: 0,
             padding: const EdgeInsets.symmetric(vertical: 12),
           ),
-          onPressed: () async {
-            final confirm = await showDialog<bool>(
-              context: context,
-              builder: (ctx) => AlertDialog(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                title: const Text(
-                  "ยืนยันที่จะทำการรีเซ็ตระบบ ?",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                content: const Text(
-                  "เมื่อตกลงแล้วจะไม่สามารถแก้ไขได้\nข้อมูลทั้งหมดจะถูกลบ ยกเว้น admin",
-                ),
-                actionsPadding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 12,
-                ),
-                actionsAlignment: MainAxisAlignment.spaceEvenly,
-                actions: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              foregroundColor: Colors.white,
+          onPressed: _busy
+              ? null
+              : () async {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (ctx) => AlertDialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      title: const Text(
+                        "ยืนยันที่จะทำการรีเซ็ตระบบ ?",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      content: const Text(
+                        "เมื่อตกลงแล้วจะไม่สามารถแก้ไขได้\nข้อมูลทั้งหมดจะถูกลบ ยกเว้น admin",
+                      ),
+                      actionsPadding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 12),
+                      actionsAlignment: MainAxisAlignment.spaceEvenly,
+                      actions: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 4),
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  onPressed: () => Navigator.pop(ctx, false),
+                                  child: const Text("ยกเลิก"),
+                                ),
+                              ),
                             ),
-                            onPressed: () => Navigator.pop(ctx, false),
-                            child: const Text("ยกเลิก"),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              foregroundColor: Colors.white,
+                            Expanded(
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 4),
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  onPressed: () => Navigator.pop(ctx, true),
+                                  child: const Text("ยืนยัน"),
+                                ),
+                              ),
                             ),
-                            onPressed: () => Navigator.pop(ctx, true),
-                            child: const Text("ยืนยัน"),
-                          ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-
-            if (confirm != true) return;
-
-            try {
-              var config = await Configuration.getConfig();
-              var url = config['apiEndpoint'];
-              var uri = Uri.parse("$url/api/admin/reset");
-
-              final resp = await http.delete(
-                uri,
-                headers: {
-                  "Content-Type": "application/json; charset=utf-8",
-                  "Authorization": "Bearer ${widget.currentUser.token}",
-                },
-              );
-
-              if (resp.statusCode == 200) {
-                final data = jsonDecode(resp.body);
-                if (data['success'] == true) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("รีเซ็ตระบบสำเร็จ")),
-                    );
-                  }
-                } else {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text("รีเซ็ตไม่สำเร็จ: ${data['message']}"),
-                      ),
-                    );
-                  }
-                }
-              } else {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Error: ${resp.statusCode}")),
+                      ],
+                    ),
                   );
-                }
-              }
-            } catch (e) {
-              if (context.mounted) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text("Exception: $e")));
-              }
-            }
-          },
-          child: const Row(
+
+                  if (confirm != true) return;
+
+                  setState(() => _busy = true);
+                  try {
+                    final config = await Configuration.getConfig();
+                    final url = config['apiEndpoint'];
+                    final uri = Uri.parse("$url/api/admin/reset");
+
+                    final resp = await http.delete(
+                      uri,
+                      headers: {
+                        "Content-Type": "application/json; charset=utf-8",
+                        "Authorization": "Bearer ${widget.currentUser.token}",
+                      },
+                    );
+
+                    if (resp.statusCode == 200) {
+                      final data = jsonDecode(resp.body);
+                      if (data['success'] == true) {
+                        // 🔁 refresh parent
+                        if (widget.onReload != null) {
+                          await widget.onReload!();
+                        }
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text("รีเซ็ตระบบสำเร็จ และรีเฟรชข้อมูลแล้ว")),
+                          );
+                        }
+                      } else {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content:
+                                    Text("รีเซ็ตไม่สำเร็จ: ${data['message']}")),
+                          );
+                        }
+                      }
+                    } else {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content:
+                                  Text("Error: ${resp.statusCode}")),
+                        );
+                      }
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Exception: $e")),
+                      );
+                    }
+                  } finally {
+                    if (mounted) setState(() => _busy = false);
+                  }
+                },
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.refresh, size: 18),
-              SizedBox(width: 8),
-              Text('รีเซ็ตระบบ', style: TextStyle(fontWeight: FontWeight.w600)),
+              const Icon(Icons.refresh, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                _busy ? 'กำลังรีเซ็ต…' : 'รีเซ็ตระบบ',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
             ],
           ),
         ),
@@ -240,65 +416,47 @@ class _RewardActionBarState extends State<RewardActionBar> {
     );
   }
 
+  // NOTE: คง signature/ชื่อเดิมไว้ตามที่คุณเรียกใช้อยู่
   void DrawReward() async {
-    Navigator.pop(context);
+    // ปิด dialog ก่อน (ถ้ายังเปิดอยู่)
+    Navigator.of(context, rootNavigator: true).maybePop();
+
+    if (_busy) return; // กันกดซ้ำ
+    setState(() => _busy = true);
+
     try {
-      final config = await Configuration.getConfig();
-      final url = config['apiEndpoint'];
+      final ok = await _drawRewardInternal();
+      if (!ok) return;
 
-      final endpoint = selected == 'สุ่มจากลอตเตอรี่ที่ขายไปแล้ว'
-          ? '$url/api/lottos/draw/purchased'
-          : '$url/api/lottos/draw/all';
-
-      final uri = Uri.parse(endpoint);
-      final resp = await http
-          .get(
-            uri,
-            headers: {
-              "Content-Type": "application/json; charset=utf-8",
-              "Authorization": "Bearer ${widget.currentUser.token}",
-            },
-          )
-          .timeout(const Duration(seconds: 20));
-
-      final bodyStr = utf8.decode(resp.bodyBytes);
-
-      if (resp.statusCode < 200 || resp.statusCode >= 300) {
-        String msg;
-        try {
-          final m = jsonDecode(bodyStr) as Map<String, dynamic>;
-          msg = (m['message'] ?? 'ออกรางวัลไม่สำเร็จ (${resp.statusCode})')
-              .toString();
-        } catch (_) {
-          msg = 'ออกรางวัลไม่สำเร็จ (${resp.statusCode})';
-        }
-        if (!context.mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(msg)));
-        return;
+      // 🔁 refresh parent
+      if (widget.onReload != null) {
+        await widget.onReload!();
       }
-      log('DrawReward OK: $bodyStr');
-      setState(() {});
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ออกรางวัลสำเร็จ และรีเฟรชข้อมูลแล้ว')),
+      );
+
+      setState(() {}); // คงไว้เพื่อไม่เปลี่ยนพฤติกรรมเดิม
     } on TimeoutException {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('การเชื่อมต่อล่าช้า กรุณาลองใหม่อีกครั้ง'),
-        ),
+        const SnackBar(content: Text('การเชื่อมต่อล่าช้า กรุณาลองใหม่อีกครั้ง')),
       );
     } catch (e) {
       log('DrawReward error: $e');
       if (!context.mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('เกิดข้อผิดพลาด: $e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('เกิดข้อผิดพลาด: $e')));
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 }
 
-extension on Future<Map<String, dynamic>> {
-}
+// no-op extension (คงไว้ไม่กระทบของเดิม)
+extension on Future<Map<String, dynamic>> {}
 
 // ดรอปดาวน์
 class ActionDropdownPill extends StatelessWidget {
@@ -307,6 +465,7 @@ class ActionDropdownPill extends StatelessWidget {
   final ValueChanged<String> onChanged;
 
   const ActionDropdownPill({
+    super.key,
     required this.value,
     required this.items,
     required this.onChanged,
@@ -333,7 +492,7 @@ class ActionDropdownPill extends StatelessWidget {
           isExpanded: true,
           value: value,
           icon: const Icon(Icons.keyboard_arrow_down_rounded),
-          borderRadius: BorderRadius.all(Radius.circular(12)),
+          borderRadius: const BorderRadius.all(Radius.circular(12)),
           items: items
               .map(
                 (e) => DropdownMenuItem(

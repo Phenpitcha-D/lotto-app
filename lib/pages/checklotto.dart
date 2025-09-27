@@ -341,7 +341,7 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                               ),
                               if (widget.currentUser.user.role == 'admin') ...[
                                 const SizedBox(height: 16),
-                                RewardActionBar(currentUser: widget.currentUser),
+                                RewardActionBar(currentUser: widget.currentUser, onReload: _reloadAll,),
                               ],
                             ],
                           ),
