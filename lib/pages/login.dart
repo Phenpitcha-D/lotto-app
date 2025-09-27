@@ -128,14 +128,7 @@ class _LoginState extends State<Login> {
                         icon: Icons.lock,
                         obscure: true,
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: const [
-                          Checkbox(value: false, onChanged: null),
-                          Text('Remember me'),
-                          Text('Forgot password?'),
-                        ],
-                      ),
+
                       _buildLoginButton(context),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
