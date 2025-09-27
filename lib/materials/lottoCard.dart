@@ -14,7 +14,7 @@ class LottoCard extends StatefulWidget {
   final int lid;
   final String token;
   final VoidCallback? onBought; // callback หลังซื้อ
-  final ValueNotifier<int> walletVN;  //update เงินหลังซื้อ
+  final ValueNotifier<int> walletVN; //update เงินหลังซื้อ
 
   const LottoCard({
     super.key,
@@ -23,7 +23,8 @@ class LottoCard extends StatefulWidget {
     this.imageAsset,
     required this.lid,
     required this.token,
-    this.onBought, required this.walletVN,
+    this.onBought,
+    required this.walletVN,
   });
 
   @override
@@ -53,12 +54,12 @@ class _LottoCardState extends State<LottoCard> {
             borderRadius: BorderRadius.circular(5),
             border: Border.all(color: Color.fromARGB(255, 255, 240, 189)),
             boxShadow: [
-                BoxShadow(
-                  offset: Offset(0, 3),
-                  blurRadius: 2,
-                  color: const Color.fromARGB(99, 0, 0, 0),
-                ),
-              ],
+              BoxShadow(
+                offset: Offset(0, 3),
+                blurRadius: 2,
+                color: const Color.fromARGB(99, 0, 0, 0),
+              ),
+            ],
           ),
           padding: const EdgeInsets.fromLTRB(10, 5, 16, 12),
           child: Row(
@@ -68,7 +69,7 @@ class _LottoCardState extends State<LottoCard> {
               Container(
                 width: 40,
                 height: 40,
-                decoration:  BoxDecoration(
+                decoration: BoxDecoration(
                   color: Color(0xFFE8AD5A),
                   shape: BoxShape.circle,
                   border: Border.all(color: const Color(0xFFA35B09)),
@@ -167,10 +168,14 @@ class _LottoCardState extends State<LottoCard> {
                                         Navigator.of(context).pop();
                                       },
                                       style: FilledButton.styleFrom(
-                                        backgroundColor: const Color(0xFFCF3030),
+                                        backgroundColor: const Color(
+                                          0xFFCF3030,
+                                        ),
                                         foregroundColor: Colors.white,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(10),
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
                                         ),
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 24,
@@ -188,10 +193,14 @@ class _LottoCardState extends State<LottoCard> {
                                         Navigator.of(context).pop();
                                       },
                                       style: FilledButton.styleFrom(
-                                        backgroundColor: const Color(0xFF2196F3),
+                                        backgroundColor: const Color(
+                                          0xFF2196F3,
+                                        ),
                                         foregroundColor: Colors.white,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(10),
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
                                         ),
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 24,
@@ -276,7 +285,7 @@ class _LottoCardState extends State<LottoCard> {
   }
 
   void LottoBuy() {
-    UserLottoBuyRequest req = UserLottoBuyRequest(lid: widget.lid);
+    final req = UserLottoBuyRequest(lid: widget.lid);
 
     http
         .post(
@@ -288,79 +297,128 @@ class _LottoCardState extends State<LottoCard> {
           body: jsonEncode(req),
         )
         .then((response) {
-          log('message');
           if (response.statusCode == 200) {
-            log('success');
-            var data = jsonDecode(response.body);
-            UserLottoBuyResponse res = UserLottoBuyResponse.fromJson(data);
+            Map<String, dynamic> data;
+            try {
+              data = jsonDecode(response.body) as Map<String, dynamic>;
+            } catch (_) {
+              _showError("รูปแบบข้อมูลจากเซิร์ฟเวอร์ไม่ถูกต้อง");
+              return;
+            }
 
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  backgroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    side: const BorderSide(
-                      color: Color(0xFF2196F3),
-                      width: 1.5,
-                    ),
-                  ),
-                  content: Text(
-                    res.success == true
-                        ? "ทำการซื้อล็อตโต้สำเร็จ\nเลขที่ซื้อ: ${res.lottoNumber}\nราคา: ${res.price} บาท"
-                        : "ล้มเหลว: ${res.message}",
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  actionsAlignment: MainAxisAlignment.center,
-                  actions: [
-                    FilledButton(
-                      onPressed: () {
+            final bool ok = (data["success"] == true);
+            final String serverMsg =
+                (data["message"] is String &&
+                    (data["message"] as String).isNotEmpty)
+                ? data["message"] as String
+                : (ok ? "ทำรายการสำเร็จ" : "ไม่สามารถทำรายการได้");
 
+            if (!ok) {
+              _showError(serverMsg);
+              return;
+            }
 
-                         // ✅ update wallet balance
-                          if (data["newBalance"] != null) {
-                            // ถ้า backend ส่งยอดใหม่มา
-                            widget.walletVN.value =
-                                (data["newBalance"] as num).toInt();
-                          } else {
-                            // ถ้า backend ไม่ส่งยอดใหม่มา → หักราคาเอง
-                            widget.walletVN.value =
-                                widget.walletVN.value - widget.price;
-                          }
+            //update wallet balance
+            if (data["newBalance"] != null) {
+              widget.walletVN.value = (data["newBalance"] as num).toInt();
+            } else {
+              widget.walletVN.value = widget.walletVN.value - widget.price;
+            }
 
-                          
-                        // ถ้าซื้อสำเร็จ เรียก callback เพื่อ refresh LottolistPage
-                        if (res.success == true && widget.onBought != null) {
-                          widget.onBought!();
-                        }
-                        Navigator.of(context).pop();
-                      },
-                      style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF2196F3),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                      ),
-                      child: const Text("ตกลง", style: TextStyle(fontSize: 16)),
-                    ),
-                  ],
-                );
+            final lottoNumber = data["lotto_number"]?.toString() ?? "-";
+            final price = data["price"]?.toString() ?? widget.price.toString();
+
+            _showSuccess(
+              "ทำการซื้อล็อตโต้สำเร็จ\nเลขที่ซื้อ: $lottoNumber\nราคา: $price บาท",
+              onOk: () {
+                if (widget.onBought != null) widget.onBought!(); // refresh list
               },
             );
           } else {
-            log("Error: ${response.statusCode}");
+            String msg = "เกิดข้อผิดพลาด (${response.statusCode})";
+            try {
+              final body = jsonDecode(response.body);
+              if (body is Map &&
+                  body["message"] is String &&
+                  (body["message"] as String).isNotEmpty) {
+                msg = body["message"];
+              }
+            } catch (_) {}
+            _showError(msg);
           }
         })
-        .catchError((error) {
-          log('Error: $error');
+        .catchError((e) {
+          _showError("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้\nโปรดลองใหม่อีกครั้ง");
         });
+  }
+
+  void _showError(String message) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+        ),
+        content: Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 16),
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            child: const Text("ตกลง", style: TextStyle(fontSize: 16)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSuccess(String message, {VoidCallback? onOk}) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: const BorderSide(color: Color(0xFF2196F3), width: 1.5),
+        ),
+        content: Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 16),
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          FilledButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              if (onOk != null) onOk();
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF2196F3),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            child: const Text("ตกลง", style: TextStyle(fontSize: 16)),
+          ),
+        ],
+      ),
+    );
   }
 }
 

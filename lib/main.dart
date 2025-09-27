@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) { 
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Lotto888',
       theme: ThemeData(
         scrollbarTheme: ScrollbarThemeData(
           thumbColor: WidgetStateProperty.all(const Color(0xFF6D6C6C)),
