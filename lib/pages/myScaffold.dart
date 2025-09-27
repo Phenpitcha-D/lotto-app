@@ -50,6 +50,8 @@ class _MyscaffoldState extends State<Myscaffold> {
   Widget build(BuildContext context) {
     final topPad = MediaQuery.of(context).padding.top;
     final bottomPad = MediaQuery.of(context).padding.bottom;
+    final bool isAdmin =
+        (widget.currentUser.user.role ?? '').trim().toLowerCase() == 'admin';
 
     return Scaffold(
       extendBody: true,
@@ -126,17 +128,48 @@ class _MyscaffoldState extends State<Myscaffold> {
                   children: [
                     Icon(Icons.person, size: 28, color: Colors.black87),
                     SizedBox(width: 10),
+
                     Expanded(
-                      child: Text(
-                        widget.currentUser.user.username,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black87,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      child: isAdmin
+                          ? Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: widget.currentUser.user.username,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  const WidgetSpan(child: SizedBox(width: 6)),
+                                  WidgetSpan(
+                                    alignment: PlaceholderAlignment.middle,
+                                    child: Icon(
+                                      Icons
+                                          .workspace_premium, // มงกุฎ/Badge ใน Material
+                                      size: 16,
+                                      color: Colors.orange,
+                                    ),
+                                  ),
+                                  const WidgetSpan(child: SizedBox(width: 4)),
+                                ],
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            )
+                          : Text(
+                              widget.currentUser.user.username,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black87,
+                              ),
+                            ),
                     ),
+
                     SizedBox(
                       height: 28,
                       child: VerticalDivider(
