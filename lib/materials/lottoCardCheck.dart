@@ -7,8 +7,9 @@ import 'package:lotto_app/config/config.dart';
 import 'package:lotto_app/model/response/prize_res.dart';
 import 'package:lotto_app/model/response/reward_get_res.dart';
 import 'package:lotto_app/model/response/user_login_post_res.dart';
-import 'package:intl/date_symbol_data_local.dart';
 import 'package:lotto_app/model/response/user_orderrecord_get_res.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 class LottoCardCheck extends StatefulWidget {
   final String number; // เลขรางวัล
@@ -23,6 +24,7 @@ class LottoCardCheck extends StatefulWidget {
   final UserLoginRespon currentUser;
   final ValueNotifier<int> walletVN;
   final int lid;
+  final String purchaseTime;
 
   const LottoCardCheck({
     super.key,
@@ -36,7 +38,7 @@ class LottoCardCheck extends StatefulWidget {
     this.rightImageSize = 30,
     required this.currentUser,
     required this.walletVN,
-    required this.lid,
+    required this.lid, required this.purchaseTime,
   });
 
   @override
@@ -163,7 +165,7 @@ class _LottoCardCheckState extends State<LottoCardCheck> {
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
-                          'ซื้อเมื่อวันที่ 05 ก.ย 2568',
+                          'ซื้อเมื่อวันที่ ${formatDateThai(widget.purchaseTime)}',
                           style: TextStyle(
                             color: Colors.grey[800],
                             fontSize: 6,
@@ -559,6 +561,15 @@ class DashedLinePainter extends CustomPainter {
 }
 
 /* ---------------------------- Dialogs & Formatters ---------------------------- */
+
+String formatDateThai(String iso) {
+    try {
+      final dt = DateTime.parse(iso).toLocal();
+      return DateFormat("dd MMM yyyy", "th_TH").format(dt);
+    } catch (_) {
+      return iso;
+    }
+  }
 
 String formatBaht(int n) {
   final s = n.toString();
