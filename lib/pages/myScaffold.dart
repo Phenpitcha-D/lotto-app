@@ -95,7 +95,7 @@ class _MyscaffoldState extends State<Myscaffold> {
                       padding: const EdgeInsets.fromLTRB(0, 12, 5, 0),
                       child: IconButton(
                         onPressed: Logout,
-                        icon: Icon(Icons.door_back_door, color: Colors.white),
+                        icon: Icon(Icons.logout, color: Colors.white),
                       ),
                     ),
                   ),
