@@ -24,8 +24,8 @@ class RewardActionBar extends StatefulWidget {
 class _RewardActionBarState extends State<RewardActionBar> {
   final List<String> modes = const [
     'เลือกการสุ่มรางวัล',
-    'สุ่มจากลอตเตอรี่ที่ขายไปแล้ว',
-    'สุ่มจากลอตเตอรี่ทั้งหมด',
+    'สุ่มจากลอตโต้ที่ขายไปแล้ว',
+    'สุ่มจากลอตโต้ทั้งหมด',
   ];
   String selected = 'เลือกการสุ่มรางวัล';
 
