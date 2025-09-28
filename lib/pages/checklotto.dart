@@ -82,7 +82,10 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('โหลดข้อมูลผิดพลาด: ${snapshot.error}', textAlign: TextAlign.center),
+                Text(
+                  'โหลดข้อมูลผิดพลาด: ${snapshot.error}',
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 12),
                 ElevatedButton.icon(
                   onPressed: _reloadAll,
@@ -192,24 +195,34 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                                 children: [
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         const Text('รางวัลที่ 2'),
                                         Container(
                                           width: double.infinity,
                                           decoration: BoxDecoration(
                                             color: Colors.white,
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
                                             boxShadow: const [
                                               BoxShadow(
                                                 offset: Offset(0, 3),
                                                 blurRadius: 2,
-                                                color: Color.fromARGB(99, 0, 0, 0),
+                                                color: Color.fromARGB(
+                                                  99,
+                                                  0,
+                                                  0,
+                                                  0,
+                                                ),
                                               ),
                                             ],
                                           ),
                                           child: SmallPrizeCard(
-                                            number: r2?.lottoNumber ?? 'ยังไม่ออกรางวัล',
+                                            number:
+                                                r2?.lottoNumber ??
+                                                'ยังไม่ออกรางวัล',
                                             prizeText: (r2?.bounty != null)
                                                 ? '*รางวัลละ ${formatBalance(r2!.bounty)}'
                                                 : '*รางวัลละ 1,000,000 บาท',
@@ -225,24 +238,34 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                                   const SizedBox(width: 5),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         const Text('รางวัลที่ 3'),
                                         Container(
                                           width: double.infinity,
                                           decoration: BoxDecoration(
                                             color: Colors.white,
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
                                             boxShadow: const [
                                               BoxShadow(
                                                 offset: Offset(0, 3),
                                                 blurRadius: 2,
-                                                color: Color.fromARGB(99, 0, 0, 0),
+                                                color: Color.fromARGB(
+                                                  99,
+                                                  0,
+                                                  0,
+                                                  0,
+                                                ),
                                               ),
                                             ],
                                           ),
                                           child: SmallPrizeCard(
-                                            number: r3?.lottoNumber ?? 'ยังไม่ออกรางวัล',
+                                            number:
+                                                r3?.lottoNumber ??
+                                                'ยังไม่ออกรางวัล',
                                             prizeText: (r3?.bounty != null)
                                                 ? '*รางวัลละ ${formatBalance(r3!.bounty)}'
                                                 : '*รางวัลละ 800,000 บาท',
@@ -262,24 +285,36 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                                 children: [
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         const Text('รางวัลเลขท้าย 3 ตัว'),
                                         Container(
                                           width: double.infinity,
                                           decoration: BoxDecoration(
                                             color: Colors.white,
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
                                             boxShadow: const [
                                               BoxShadow(
                                                 offset: Offset(0, 3),
                                                 blurRadius: 2,
-                                                color: Color.fromARGB(99, 0, 0, 0),
+                                                color: Color.fromARGB(
+                                                  99,
+                                                  0,
+                                                  0,
+                                                  0,
+                                                ),
                                               ),
                                             ],
                                           ),
                                           child: SmallPrizeCard(
-                                            number: tail(r1?.lottoNumber, 3),
+                                            number:
+                                                (r1?.lottoNumber == null ||
+                                                    r1!.lottoNumber.isEmpty)
+                                                ? 'ยังไม่ออกรางวัล'
+                                                : tail(r1.lottoNumber, 3),
                                             prizeText: (r4?.bounty != null)
                                                 ? '*รางวัลละ ${formatBalance(r4!.bounty)}'
                                                 : '*รางวัลละ 4,000 บาท',
@@ -295,24 +330,36 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                                   const SizedBox(width: 5),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         const Text('รางวัลเลขท้าย 2 ตัว'),
                                         Container(
                                           width: double.infinity,
                                           decoration: BoxDecoration(
                                             color: Colors.white,
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
                                             boxShadow: const [
                                               BoxShadow(
                                                 offset: Offset(0, 3),
                                                 blurRadius: 2,
-                                                color: Color.fromARGB(99, 0, 0, 0),
+                                                color: Color.fromARGB(
+                                                  99,
+                                                  0,
+                                                  0,
+                                                  0,
+                                                ),
                                               ),
                                             ],
                                           ),
                                           child: SmallPrizeCard(
-                                            number: tail(r5?.lottoNumber, 2),
+                                            number:
+                                                (r5?.lottoNumber == null ||
+                                                    r5!.lottoNumber.isEmpty)
+                                                ? 'ยังไม่ออกรางวัล'
+                                                : tail(r5.lottoNumber, 2),
                                             prizeText: (r5?.bounty != null)
                                                 ? '*รางวัลละ ${formatBalance(r5!.bounty)}'
                                                 : '*รางวัลละ 2,000 บาท',
@@ -341,7 +388,10 @@ class _CheckLottoPageState extends State<CheckLottoPage> {
                               ),
                               if (widget.currentUser.user.role == 'admin') ...[
                                 const SizedBox(height: 16),
-                                RewardActionBar(currentUser: widget.currentUser, onReload: _reloadAll,),
+                                RewardActionBar(
+                                  currentUser: widget.currentUser,
+                                  onReload: _reloadAll,
+                                ),
                               ],
                             ],
                           ),

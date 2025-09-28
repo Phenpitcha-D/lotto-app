@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
 class SmallPrizeCard extends StatelessWidget {
-  final String number;       // เลขรางวัล
-  final String prizeText;    // ข้อความรางวัล เช่น *รางวัลละ 6,000,000 บาท
-  final String leftAsset;    // asset ด้านซ้าย (คาปิบาร่า)
-  final String rightAsset;   // asset ด้านขวา (แมวถือเหรียญ)
+  final String number; // เลขรางวัล
+  final String prizeText; // ข้อความรางวัล เช่น *รางวัลละ 6,000,000 บาท
+  final String leftAsset; // asset ด้านซ้าย (คาปิบาร่า)
+  final String rightAsset; // asset ด้านขวา (แมวถือเหรียญ)
 
-  final double leftSize;        // ✅ ขนาดวงกลมด้านซ้าย
-  final double leftImageSize;   // ✅ ขนาดรูปด้านซ้าย
-  final double numberFontSize;  // ✅ ขนาดฟอนต์เลขรางวัล
-  final double rightImageSize;  // ✅ ขนาดรูปขวา
+  final double leftSize; // ✅ ขนาดวงกลมด้านซ้าย
+  final double leftImageSize; // ✅ ขนาดรูปด้านซ้าย
+  final double numberFontSize; // ✅ ขนาดฟอนต์เลขรางวัล
+  final double rightImageSize; // ✅ ขนาดรูปขวา
 
   const SmallPrizeCard({
     super.key,
@@ -17,14 +17,20 @@ class SmallPrizeCard extends StatelessWidget {
     required this.prizeText,
     required this.leftAsset,
     required this.rightAsset,
-    this.leftSize = 40,          // default = 40
-    this.leftImageSize = 32,     // default = 32
-    this.numberFontSize = 32,    // default = 32 (เล็กกว่า PrizeCard หลัก)
-    this.rightImageSize = 28,    // default = 28
+    this.leftSize = 40, // default = 40
+    this.leftImageSize = 32, // default = 32
+    this.numberFontSize = 32, // default = 32 (เล็กกว่า PrizeCard หลัก)
+    this.rightImageSize = 28, // default = 28
   });
 
   @override
   Widget build(BuildContext context) {
+    // ✅ เตรียมค่าที่จะแสดงเพื่อคุม spacing ให้ถูกต้อง
+    final bool isPending = number.trim() == 'ยังไม่ออกรางวัล';
+    final String displayNumber = isPending
+        ? number
+        : number.replaceAll(' ', '').split('').join(' '); // กันเคสมี space เดิม
+
     return Container(
       margin: const EdgeInsets.all(4),
       decoration: BoxDecoration(
@@ -68,21 +74,22 @@ class SmallPrizeCard extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  number.split('').join(' '), // เว้นช่องแต่ละเลข
+                                  displayNumber,
                                   style: TextStyle(
-                                    fontSize: numberFontSize,   // ✅ ปรับได้
+                                    fontSize: numberFontSize, // ✅ ปรับได้
                                     fontWeight: FontWeight.bold,
-                                    letterSpacing: 4,
+                                    // ✅ ไม่เว้นช่องเพิ่มเมื่อเป็นข้อความ “ยังไม่ออกรางวัล”
+                                    letterSpacing: isPending ? 0 : 4,
                                   ),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 6),
-                                  child: Image.asset(
-                                    rightAsset,
-                                    width: rightImageSize,       // ✅ ปรับได้
-                                    height: rightImageSize,
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 6),
+                                    child: Image.asset(
+                                      rightAsset,
+                                      width: rightImageSize, // ✅ ปรับได้
+                                      height: rightImageSize,
+                                    ),
                                   ),
-                                ),
                               ],
                             ),
                           ),

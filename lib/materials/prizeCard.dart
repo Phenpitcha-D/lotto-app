@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
 class PrizeCard extends StatelessWidget {
-  final String number; // เลขรางวัล
-  final String prizeText; // ข้อความรางวัล เช่น *รางวัลละ 6,000,000 บาท
-  final String leftAsset; // asset ด้านซ้าย (คาปิบาร่า)
-  final String rightAsset; // asset ด้านขวา (แมวถือเหรียญ)
+  final String number;       // เลขรางวัล
+  final String prizeText;    // ข้อความรางวัล เช่น *รางวัลละ 6,000,000 บาท
+  final String leftAsset;    // asset ด้านซ้าย (คาปิบาร่า)
+  final String rightAsset;   // asset ด้านขวา (แมวถือเหรียญ)
 
   // ✅ ปรับขนาดได้
-  final double leftSize; // ขนาดวงกลมด้านซ้าย
-  final double leftImageSize; // ขนาดรูปด้านซ้าย
+  final double leftSize;       // ขนาดวงกลมด้านซ้าย
+  final double leftImageSize;  // ขนาดรูปด้านซ้าย
   final double numberFontSize; // ขนาดฟอนต์เลขรางวัล
   final double rightImageSize; // ขนาดรูปด้านขวา
 
@@ -18,18 +18,23 @@ class PrizeCard extends StatelessWidget {
     required this.prizeText,
     required this.leftAsset,
     required this.rightAsset,
-    this.leftSize = 70, // default เท่าเดิม
-    this.leftImageSize = 56, // default เท่าเดิม
-    this.numberFontSize = 64, // default เท่าเดิม
-    this.rightImageSize = 52, // default เท่าเดิม
+    this.leftSize = 70,
+    this.leftImageSize = 56,
+    this.numberFontSize = 64,
+    this.rightImageSize = 52,
   });
 
   @override
   Widget build(BuildContext context) {
+    // ✅ คุม spacing: ถ้ายังไม่ออกรางวัล แสดงข้อความตรง ๆ และไม่เว้นช่อง
+    final bool isPending = number.trim() == 'ยังไม่ออกรางวัล';
+    final String displayNumber =
+        isPending ? number : number.replaceAll(' ', '').split('').join(' ');
+
     return Container(
       margin: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFE79F), // ครีมพื้นหลัง
+        color: const Color(0xFFFFE79F),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: const Color.fromARGB(255, 255, 240, 189)),
         boxShadow: const [
@@ -46,14 +51,10 @@ class PrizeCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: Row(
                   children: [
-                    SizedBox(width: leftSize + 10), // ✅ เว้นที่ตามขนาดไอคอนซ้าย
-                    // กล่องเลขรางวัล
+                    SizedBox(width: leftSize + 10),
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.only(right: 12),
@@ -69,25 +70,21 @@ class PrizeCard extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  number == 'ยังไม่ออกรางวัล'
-                                      ? number
-                                      : number
-                                            .split('')
-                                            .join(' '), // เว้นช่องแต่ละเลข
+                                  displayNumber,
                                   style: TextStyle(
-                                    fontSize: numberFontSize, // ✅ ปรับได้
+                                    fontSize: numberFontSize,
                                     fontWeight: FontWeight.bold,
-                                    letterSpacing: 4,
+                                    letterSpacing: isPending ? 0 : 4, // ✅ ตรงนี้แหละ!
                                   ),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 6),
-                                  child: Image.asset(
-                                    rightAsset,
-                                    width: rightImageSize, // ✅ ปรับได้
-                                    height: rightImageSize,
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 6),
+                                    child: Image.asset(
+                                      rightAsset,
+                                      width: rightImageSize,
+                                      height: rightImageSize,
+                                    ),
                                   ),
-                                ),
                               ],
                             ),
                           ),
@@ -97,13 +94,8 @@ class PrizeCard extends StatelessWidget {
                   ],
                 ),
               ),
-
-              // ข้อความรางวัล
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 10,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 10),
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: FittedBox(
