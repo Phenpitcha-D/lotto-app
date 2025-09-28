@@ -329,11 +329,14 @@ class _WalletPageState extends State<WalletPage> {
                                     Expanded(
                                       child: Text(
                                         tran.description,
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           fontSize: 14,
                                           color: Colors.black,
                                         ),
-                                        overflow: TextOverflow.ellipsis,
+                                        // ✅ ให้ตัดบรรทัดใหม่อัตโนมัติเมื่อยาวเกินความกว้าง
+                                        softWrap: true,
+                                        overflow: TextOverflow.visible,
+                                        maxLines: null, // ไม่จำกัดจำนวนบรรทัด
                                       ),
                                     ),
 
