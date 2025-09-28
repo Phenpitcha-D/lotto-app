@@ -15,8 +15,8 @@ import 'package:intl/date_symbol_data_local.dart';
 
 class WalletPage extends StatefulWidget {
   final UserLoginRespon currentUser;
-
   final ValueNotifier<int> walletVN;
+
   const WalletPage({
     super.key,
     required this.currentUser,
@@ -35,6 +35,9 @@ class _WalletPageState extends State<WalletPage> {
   // เก็บยอดคงเหลือปัจจุบันเพื่ออัปเดตสดหลังทำรายการ
   int currentBalance = 0;
 
+  // ✅ controller สำหรับลิสต์ธุรกรรม (ไว้ให้ Scrollbar และควบคุมเลื่อน)
+  final ScrollController transCtrl = ScrollController();
+
   @override
   void initState() {
     super.initState();
@@ -44,202 +47,203 @@ class _WalletPageState extends State<WalletPage> {
   }
 
   @override
+  void dispose() {
+    transCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // บัตรยอดเงินคงเหลือ
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFFB43F3F),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  offset: Offset(0, 3),
-                  blurRadius: 2,
-                  color: const Color.fromARGB(99, 0, 0, 0),
-                ),
-              ],
-            ),
-            padding: EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'ยอดเงินคงเหลือ',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+    // ใช้ RefreshIndicator + ListView ตัวเดียวให้เลื่อนทั้งหน้า
+    return RefreshIndicator.adaptive(
+      onRefresh: reload,
+      edgeOffset: 4,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: 20),
+        children: [
+          // บัตรยอดเงินคงเหลือ
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFFB43F3F),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: const [
+                  BoxShadow(
+                    offset: Offset(0, 3),
+                    blurRadius: 2,
+                    color: Color.fromARGB(99, 0, 0, 0),
                   ),
-                ),
-                SizedBox(height: 8),
-                Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.symmetric(vertical: 18, horizontal: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        offset: Offset(0, 3),
-                        blurRadius: 2,
-                        color: const Color.fromARGB(99, 0, 0, 0),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: ValueListenableBuilder<int>(
-                          valueListenable: widget.walletVN,
-                          builder: (context, bal, _) {
-                            return Center(
-                              child: Text(
-                                formatBalance(bal),
-                                style: TextStyle(fontSize: 36),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        // ปุ่มลัด 3 อัน (เติม/ถอน/โอน)
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  offset: Offset(0, 3),
-                  blurRadius: 2,
-                  color: const Color.fromARGB(99, 0, 0, 0),
-                ),
-              ],
-            ),
-            padding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-            child: Row(
-              children: [
-                //เติมเงิน
-                Expanded(
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: showTopupDialog,
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 6),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Image.asset(
-                              'assets/images/topup.png',
-                              width: 48,
-                              height: 48,
-                            ),
-                            SizedBox(height: 6),
-                            Text('เติมเงิน'),
-                          ],
-                        ),
-                      ),
+                ],
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'ยอดเงินคงเหลือ',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
-                Container(width: 1, height: 44, color: Colors.black12),
-
-                //ถอนเงิน
-                Expanded(
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: showWithdrawDialog,
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 6),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Image.asset(
-                              'assets/images/withdraw.png',
-                              width: 48,
-                              height: 48,
-                            ),
-                            SizedBox(height: 6),
-                            Text('ถอนเงิน'),
-                          ],
+                  const SizedBox(height: 8),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: const [
+                        BoxShadow(
+                          offset: Offset(0, 3),
+                          blurRadius: 2,
+                          color: Color.fromARGB(99, 0, 0, 0),
                         ),
-                      ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: ValueListenableBuilder<int>(
+                            valueListenable: widget.walletVN,
+                            builder: (context, bal, _) {
+                              return Center(
+                                child: Text(
+                                  formatBalance(bal),
+                                  style: const TextStyle(fontSize: 36),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-                Container(width: 1, height: 44, color: Colors.black12),
-
-                //โอนเงิน
-                Expanded(
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: showTransferDialog,
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 6),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Image.asset(
-                              'assets/images/transfer.png',
-                              width: 48,
-                              height: 48,
-                            ),
-                            SizedBox(height: 6),
-                            Text('โอนเงิน'),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        Padding(
-          padding: EdgeInsets.fromLTRB(25, 16, 16, 8),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'รายการย้อนหลัง',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF360000),
+                ],
               ),
             ),
           ),
-        ),
-        SizedBox(height: 6),
 
-        //ส่วนแสดง List ประวัติทางการเงิน
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+          // ปุ่มลัด 3 อัน (เติม/ถอน/โอน)
+          Padding(
+            padding: const EdgeInsets.all(8.0),
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: const [
+                  BoxShadow(
+                    offset: Offset(0, 3),
+                    blurRadius: 2,
+                    color: Color.fromARGB(99, 0, 0, 0),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+              child: Row(
+                children: [
+                  // เติมเงิน
+                  Expanded(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: showTopupDialog,
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 6),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _ActionIcon(asset: 'assets/images/topup.png'),
+                              SizedBox(height: 6),
+                              Text('เติมเงิน'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(width: 1, height: 44, color: Colors.black12),
+
+                  // ถอนเงิน
+                  Expanded(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: showWithdrawDialog,
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 6),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _ActionIcon(asset: 'assets/images/withdraw.png'),
+                              SizedBox(height: 6),
+                              Text('ถอนเงิน'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(width: 1, height: 44, color: Colors.black12),
+
+                  // โอนเงิน
+                  Expanded(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: showTransferDialog,
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 6),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _ActionIcon(asset: 'assets/images/transfer.png'),
+                              SizedBox(height: 6),
+                              Text('โอนเงิน'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // หัวข้อรายการย้อนหลัง
+          const Padding(
+            padding: EdgeInsets.fromLTRB(25, 16, 16, 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'รายการย้อนหลัง',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF360000),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+
+          // กล่องรายการ + FutureBuilder
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+            child: Container(
+              height: 150,
+              decoration: BoxDecoration(
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: [
+                boxShadow: const [
                   BoxShadow(
                     color: Colors.black26,
                     blurRadius: 12,
@@ -251,11 +255,9 @@ class _WalletPageState extends State<WalletPage> {
                 future: loadData,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(24),
-                        child: CircularProgressIndicator(),
-                      ),
+                    return const Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Center(child: CircularProgressIndicator()),
                     );
                   } else if (snapshot.hasError) {
                     return Padding(
@@ -267,8 +269,7 @@ class _WalletPageState extends State<WalletPage> {
                           FilledButton(
                             onPressed: () {
                               setState(() {
-                                loadData =
-                                    loadDataAsync(); // ✅ ต้อง assign กลับ
+                                loadData = loadDataAsync(); // reload
                               });
                             },
                             child: const Text('ลองใหม่'),
@@ -279,91 +280,83 @@ class _WalletPageState extends State<WalletPage> {
                   }
 
                   if (transactions.isEmpty) {
-                    return RefreshIndicator(
-                      onRefresh: reload,
-                      child: CustomScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        slivers: [
-                          SliverFillRemaining(
-                            hasScrollBody: false, // ยืดเต็มความสูงที่เหลือ
-                            child: Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Text("ไม่มีรายการเดินบัญชี"),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                    // ให้เลื่อนหน้าได้ด้วย (ไม่ให้ตัน)
+                    return const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Center(child: Text("ไม่มีรายการเดินบัญชี")),
                     );
                   }
 
-                  return RefreshIndicator(
-                    onRefresh: reload,
-                    child: Scrollbar(
-                      child: ListView.separated(
-                        padding: EdgeInsets.symmetric(vertical: 8),
-                        itemCount: transactions.length,
-                        separatorBuilder: (_, __) =>
-                            const Divider(height: 1, color: Colors.black12),
-                        itemBuilder: (BuildContext context, int index) {
-                          final tran = transactions[index];
-                          final isCredit = tran.type.toLowerCase() == 'credit';
-                          final amtStr = formatAmount(
-                            tran.amount,
-                            isCredit: isCredit,
-                          );
+                  // ✅ ให้ลิสต์ด้านในเลื่อนได้จริง โดยกำหนด maxHeight แบบยืดหยุ่น
+                  final screenH = MediaQuery.of(context).size.height;
+                  final double listMaxH = (screenH * 0.55).clamp(300.0, 520.0);
 
-                          //รายการทางการเงิน เช่น โอนเงิน 11 ก.ย 2568  -300
-                          return Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Row(
-                                  children: [
-                                    //รายการนี้ทำอะไร เช่น โอนเงิน, เติมเงิน, ถอนเงิน, ซื้อล็อตโต้
-                                    Expanded(
-                                      child: Text(
-                                        tran.description,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.black,
+                  return ConstrainedBox(
+                    constraints: BoxConstraints(maxHeight: listMaxH),
+                    child: RefreshIndicator.adaptive(
+                      onRefresh: reload,                // ✅ ดึงลงเพื่อรีเฟรชในลิสต์ธุรกรรมเอง
+                      edgeOffset: 2,
+                      child: Scrollbar(
+                        controller: transCtrl,
+                        child: ListView.separated(
+                          controller: transCtrl,
+                          physics: const AlwaysScrollableScrollPhysics(), // ✅ ดึงลงได้เสมอ
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          itemCount: transactions.length,
+                          separatorBuilder: (_, __) =>
+                              const Divider(height: 1, color: Colors.black12),
+                          itemBuilder: (BuildContext context, int index) {
+                            final tran = transactions[index];
+                            final isCredit = tran.type.toLowerCase() == 'credit';
+                            final amtStr = formatAmount(tran.amount, isCredit: isCredit);
+
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Row(
+                                    children: [
+                                      // คำอธิบาย
+                                      Expanded(
+                                        child: Text(
+                                          tran.description,
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.black,
+                                          ),
+                                          softWrap: true,
+                                          overflow: TextOverflow.visible,
+                                          maxLines: null,
                                         ),
-                                        // ✅ ให้ตัดบรรทัดใหม่อัตโนมัติเมื่อยาวเกินความกว้าง
-                                        softWrap: true,
-                                        overflow: TextOverflow.visible,
-                                        maxLines: null, // ไม่จำกัดจำนวนบรรทัด
                                       ),
-                                    ),
-
-                                    // ทำรายการเมื่อ เช่น  19 ก.ย 2025 - 15:09
-                                    Text(
-                                      formatDateThai(tran.createdAt),
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.grey,
+                                      // เวลา
+                                      Text(
+                                        formatDateThai(tran.createdAt),
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.grey,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-
-                                // amount (+/- และสีตาม type)
-                                Text(
-                                  amtStr,
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: amountColor(isCredit),
+                                    ],
                                   ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
+                                  // จำนวนเงิน
+                                  Text(
+                                    amtStr,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: amountColor(isCredit),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
                   );
@@ -371,19 +364,18 @@ class _WalletPageState extends State<WalletPage> {
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   /// ใช้รีเฟรชข้อมูลทุกอย่าง (ยอด + ลิสต์)
   Future<void> reload() async {
-    await loadDataAsync();
-    if (!mounted) return;
+    final future = loadDataAsync();
     setState(() {
-      loadData =
-          Future.value(); // ทำให้ FutureBuilder สำเร็จเร็ว และใช้ transactions ล่าสุด
+      loadData = future; // ทำให้ FutureBuilder โหลดใหม่
     });
+    await future; // ให้ RefreshIndicator รู้ว่าจบแล้ว
   }
 
   Future<void> loadDataAsync() async {
@@ -394,8 +386,8 @@ class _WalletPageState extends State<WalletPage> {
     }
 
     // เรียก API
-    var uid = widget.currentUser.user.uid;
-    var res = await http
+    final uid = widget.currentUser.user.uid;
+    final res = await http
         .get(
           Uri.parse('$url/api/wallet/transactions/$uid'),
           headers: {
@@ -403,7 +395,7 @@ class _WalletPageState extends State<WalletPage> {
             "Authorization": "Bearer ${widget.currentUser.token}",
           },
         )
-        .timeout(Duration(seconds: 12));
+        .timeout(const Duration(seconds: 12));
 
     // Decode JSON
     final body = jsonDecode(utf8.decode(res.bodyBytes));
@@ -417,7 +409,6 @@ class _WalletPageState extends State<WalletPage> {
   String formatAmount(int amount, {required bool isCredit}) {
     final nf = NumberFormat("#,##0.00", "th_TH");
     return "${isCredit ? '+' : '-'}${nf.format(amount.toDouble())}";
-    // NOTE: ถ้าฐานข้อมูลใช้ทศนิยม ให้ปรับ model/จำนวนเงินให้สอดคล้อง
   }
 
   // แปลง 1000 เป็น 1,000.00 บาท
@@ -565,7 +556,7 @@ class _WalletPageState extends State<WalletPage> {
         if (mounted) {
           setState(() {
             currentBalance = transRes.newBalance;
-            widget.currentUser.user.wallet = transRes.newBalance; // <- สำคัญ
+            widget.currentUser.user.wallet = transRes.newBalance; // สำคัญ
           });
           widget.walletVN.value = transRes.newBalance;
         }
@@ -707,7 +698,7 @@ class _WalletPageState extends State<WalletPage> {
         if (mounted) {
           setState(() {
             currentBalance = transRes.newBalance;
-            widget.currentUser.user.wallet = transRes.newBalance; // <- สำคัญ
+            widget.currentUser.user.wallet = transRes.newBalance; // สำคัญ
           });
           widget.walletVN.value = transRes.newBalance;
         }
@@ -857,7 +848,6 @@ class _WalletPageState extends State<WalletPage> {
       // พยายามอ่านยอดใหม่ถ้ามีใน response
       try {
         final body = utf8.decode(res.bodyBytes);
-
         final transferRes = TransferRes.fromJson(jsonDecode(body));
 
         final selfUid = widget.currentUser.user.uid;
@@ -871,7 +861,7 @@ class _WalletPageState extends State<WalletPage> {
         if (newBal != null && mounted) {
           setState(() {
             currentBalance = newBal!;
-            widget.currentUser.user.wallet = newBal; // <- สำคัญ
+            widget.currentUser.user.wallet = newBal;
           });
           widget.walletVN.value = newBal;
         }
@@ -972,4 +962,15 @@ class _WalletPageState extends State<WalletPage> {
       SnackBar(content: Text(msg), backgroundColor: error ? Colors.red : null),
     );
   }
+}
+
+// widget ย่อยเล็ก ๆ ไว้แสดงไอคอนปุ่มลัด (ลดซ้ำโค้ด)
+class _ActionIcon extends StatelessWidget {
+  final String asset;
+  const _ActionIcon({required this.asset});
+
+  @override
+  Widget build(BuildContext context) {
+    return Image.asset(asset, width: 48, height: 48);
+    }
 }
