@@ -25,6 +25,7 @@ class LottoCardCheck extends StatefulWidget {
   final ValueNotifier<int> walletVN;
   final int lid;
   final String purchaseTime;
+  final String price;
 
   const LottoCardCheck({
     super.key,
@@ -38,7 +39,7 @@ class LottoCardCheck extends StatefulWidget {
     this.rightImageSize = 30,
     required this.currentUser,
     required this.walletVN,
-    required this.lid, required this.purchaseTime,
+    required this.lid, required this.purchaseTime, required this.price,
   });
 
   @override
@@ -143,7 +144,7 @@ class _LottoCardCheckState extends State<LottoCardCheck> {
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
-                          'ราคา : 80 บาท',
+                          'ราคา : ${widget.price} บาท',
                           style: TextStyle(
                             color: Colors.grey[800],
                             fontSize: 10,
