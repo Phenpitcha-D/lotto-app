@@ -88,14 +88,14 @@ class _MyscaffoldState extends State<Myscaffold> {
                     ),
                   ),
 
-                  // ปุ่ม Logout
                   Align(
                     alignment: Alignment.centerRight,
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(0, 12, 5, 0),
                       child: IconButton(
-                        onPressed: Logout,
-                        icon: Icon(Icons.logout, color: Colors.white),
+                        onPressed: () =>
+                            _confirmLogout(context), // << เปลี่ยนแค่นี้
+                        icon: const Icon(Icons.logout, color: Colors.white),
                       ),
                     ),
                   ),
@@ -317,6 +317,69 @@ class _MyscaffoldState extends State<Myscaffold> {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmLogout(BuildContext context) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+            side: const BorderSide(color: Color(0xFF2196F3), width: 1.5),
+          ),
+          title: const Text(
+            "ออกจากระบบ",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: const Text(
+            "ยืนยันที่จะออกจากระบบหรือไม่?",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 16),
+          ),
+          actionsAlignment: MainAxisAlignment.spaceEvenly,
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFFCF3030),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+              ),
+              child: const Text("ยกเลิก", style: TextStyle(fontSize: 16)),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF2196F3),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+              ),
+              child: const Text("ยืนยัน", style: TextStyle(fontSize: 16)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (ok == true) {
+      Logout();
+    }
   }
 
   void Logout() {
