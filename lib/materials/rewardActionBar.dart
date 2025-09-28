@@ -22,12 +22,13 @@ class RewardActionBar extends StatefulWidget {
 }
 
 class _RewardActionBarState extends State<RewardActionBar> {
-  final List<String> modes = const [
-    'เลือกการสุ่มรางวัล',
-    'สุ่มจากลอตโต้ที่ขายไปแล้ว',
-    'สุ่มจากลอตโต้ทั้งหมด',
-  ];
-  String selected = 'เลือกการสุ่มรางวัล';
+  // ---- โหมดสุ่ม (กันพิมพ์ผิดด้วยคอนสแตนต์) ----
+  static const String kModeChoose = 'เลือกการสุ่มรางวัล';
+  static const String kModePurchased = 'สุ่มจากลอตโต้ที่ขายไปแล้ว';
+  static const String kModeAll = 'สุ่มจากลอตโต้ทั้งหมด';
+
+  final List<String> modes = const [kModeChoose, kModePurchased, kModeAll];
+  String selected = kModeChoose;
 
   bool _busy = false; // ✅ กันกดซ้ำ/ปิดปุ่มระหว่างเรียก API
 
@@ -103,18 +104,21 @@ class _RewardActionBarState extends State<RewardActionBar> {
     final url = config['apiEndpoint'];
 
     // pre-check (กันเคสไม่มีลอตเตอรี่หรือไม่มีที่ถูกซื้อ)
-    final isPurchased = selected == 'สุ่มจากลอตเตอรี่ที่ขายไปแล้ว';
-    final canDraw = isPurchased
-        ? await _hasPurchasedLotto()
+    // เดิม: final isPurchased = selected == 'สุ่มจากลอตเตอรี่ที่ขายไปแล้ว';
+    final bool isPurchased = selected == kModePurchased;
+
+    final bool canDraw = isPurchased
+        ? await _hasPurchasedLotto() // ต้องมี “สลากที่ถูกซื้อจริง”
         : await _hasAnyLotto();
+
     if (!canDraw) {
       if (!mounted) return false;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             isPurchased
-                ? 'ไม่มีลอตเตอรี่ที่ถูกซื้อ จึงไม่สามารถออกรางวัลจากที่ขายไปแล้วได้'
-                : 'ไม่มีลอตเตอรี่ในระบบ จึงไม่สามารถออกรางวัลได้',
+                ? 'ยังไม่มีสลากลอตโต้ที่ถูก “ซื้อแล้ว” จึงไม่สามารถออกรางวัลได้'
+                : 'ไม่มีสลากลอตโต้ในระบบ จึงไม่สามารถออกรางวัลได้',
           ),
         ),
       );
