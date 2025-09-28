@@ -99,88 +99,97 @@ class _RewardActionBarState extends State<RewardActionBar> {
 
   // ---------- draw core ----------
   Future<bool> _drawRewardInternal() async {
-  final config = await Configuration.getConfig();
-  final url = config['apiEndpoint'];
+    final config = await Configuration.getConfig();
+    final url = config['apiEndpoint'];
 
-  // pre-check (กันเคสไม่มีลอตเตอรี่หรือไม่มีที่ถูกซื้อ)
-  final isPurchased = selected == 'สุ่มจากลอตเตอรี่ที่ขายไปแล้ว';
-  final canDraw = isPurchased ? await _hasPurchasedLotto() : await _hasAnyLotto();
-  if (!canDraw) {
-    if (!mounted) return false;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          isPurchased
-              ? 'ไม่มีลอตเตอรี่ที่ถูกซื้อ จึงไม่สามารถออกรางวัลจากที่ขายไปแล้วได้'
-              : 'ไม่มีลอตเตอรี่ในระบบ จึงไม่สามารถออกรางวัลได้',
+    // pre-check (กันเคสไม่มีลอตเตอรี่หรือไม่มีที่ถูกซื้อ)
+    final isPurchased = selected == 'สุ่มจากลอตเตอรี่ที่ขายไปแล้ว';
+    final canDraw = isPurchased
+        ? await _hasPurchasedLotto()
+        : await _hasAnyLotto();
+    if (!canDraw) {
+      if (!mounted) return false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isPurchased
+                ? 'ไม่มีลอตเตอรี่ที่ถูกซื้อ จึงไม่สามารถออกรางวัลจากที่ขายไปแล้วได้'
+                : 'ไม่มีลอตเตอรี่ในระบบ จึงไม่สามารถออกรางวัลได้',
+          ),
         ),
-      ),
-    );
-    return false;
-  }
-
-  final endpoint = isPurchased
-      ? '$url/api/lottos/draw/purchased'
-      : '$url/api/lottos/draw/all';
-
-  final uri = Uri.parse(endpoint);
-  final resp = await http
-      .get(
-        uri,
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-          "Authorization": "Bearer ${widget.currentUser.token}",
-        },
-      )
-      .timeout(const Duration(seconds: 20));
-
-  final bodyStr = utf8.decode(resp.bodyBytes);
-
-  // ⛔️ 1) HTTP error → แสดงสถานะตามเดิม
-  if (resp.statusCode < 200 || resp.statusCode >= 300) {
-    String msg;
-    try {
-      final m = jsonDecode(bodyStr) as Map<String, dynamic>;
-      msg = (m['message'] ?? 'ออกรางวัลไม่สำเร็จ (${resp.statusCode})').toString();
-    } catch (_) {
-      msg = 'ออกรางวัลไม่สำเร็จ (${resp.statusCode})';
+      );
+      return false;
     }
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-    }
-    return false;
-  }
 
-  // ✅ 2) HTTP 2xx แต่ผลลัพธ์ธุรกิจไม่ผ่าน → อ่าน success/message แล้วปฏิเสธ
-  try {
-    final decoded = jsonDecode(bodyStr);
-    if (decoded is Map<String, dynamic>) {
-      final success = decoded['success'];
-      final message = (decoded['message'] ?? '').toString();
+    final endpoint = isPurchased
+        ? '$url/api/lottos/draw/purchased'
+        : '$url/api/lottos/draw/all';
 
-      // กรณีอย่าง: {"success":false,"message":"ยังไม่มีเลขที่ถูกซื้อเพียงพอ"}
-      if (success is bool && success == false) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(message.isNotEmpty ? message : 'ออกรางวัลไม่สำเร็จ')),
-          );
-        }
-        return false;
+    final uri = Uri.parse(endpoint);
+    final resp = await http
+        .get(
+          uri,
+          headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            "Authorization": "Bearer ${widget.currentUser.token}",
+          },
+        )
+        .timeout(const Duration(seconds: 20));
+
+    final bodyStr = utf8.decode(resp.bodyBytes);
+
+    // ⛔️ 1) HTTP error → แสดงสถานะตามเดิม
+    if (resp.statusCode < 200 || resp.statusCode >= 300) {
+      String msg;
+      try {
+        final m = jsonDecode(bodyStr) as Map<String, dynamic>;
+        msg = (m['message'] ?? 'ออกรางวัลไม่สำเร็จ (${resp.statusCode})')
+            .toString();
+      } catch (_) {
+        msg = 'ออกรางวัลไม่สำเร็จ (${resp.statusCode})';
       }
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(msg)));
+      }
+      return false;
     }
-  } catch (_) {
-    // ถอดรหัสไม่ได้ก็ไม่เป็นไร ให้ถือว่าเซิร์ฟเวอร์ผ่าน (กรณีเก่า)
+
+    // ✅ 2) HTTP 2xx แต่ผลลัพธ์ธุรกิจไม่ผ่าน → อ่าน success/message แล้วปฏิเสธ
+    try {
+      final decoded = jsonDecode(bodyStr);
+      if (decoded is Map<String, dynamic>) {
+        final success = decoded['success'];
+        final message = (decoded['message'] ?? '').toString();
+
+        // กรณีอย่าง: {"success":false,"message":"ยังไม่มีเลขที่ถูกซื้อเพียงพอ"}
+        if (success is bool && success == false) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  message.isNotEmpty ? message : 'ออกรางวัลไม่สำเร็จ',
+                ),
+              ),
+            );
+          }
+          return false;
+        }
+      }
+    } catch (_) {
+      // ถอดรหัสไม่ได้ก็ไม่เป็นไร ให้ถือว่าเซิร์ฟเวอร์ผ่าน (กรณีเก่า)
+    }
+
+    log('DrawReward OK: $bodyStr');
+    return true;
   }
-
-  log('DrawReward OK: $bodyStr');
-  return true;
-}
-
 
   // ---------- UI ----------
   @override
   Widget build(BuildContext context) {
-    final drawDisabled = selected == modes.first || _busy; // ยังไม่เลือก/กำลังทำงาน
+    final drawDisabled =
+        selected == modes.first || _busy; // ยังไม่เลือก/กำลังทำงาน
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -202,11 +211,17 @@ class _RewardActionBarState extends State<RewardActionBar> {
           ),
           onPressed: drawDisabled
               ? null
-              : () {
+              : () async {
+                  // ✅ เช็คว่ามีการออกรางวัลไปแล้วหรือยัง
+                  final already = await _isRewardAlreadyDrawn();
+                  if (already) {
+                    _showAlreadyDrawnDialog();
+                    return;
+                  }
+
                   showDialog(
                     context: context,
-                    barrierDismissible:
-                        false, // ✅ กันกดหลุดระหว่างกำลังยืนยัน
+                    barrierDismissible: false,
                     builder: (BuildContext context) {
                       return AlertDialog(
                         backgroundColor: Colors.white,
@@ -239,8 +254,10 @@ class _RewardActionBarState extends State<RewardActionBar> {
                                 vertical: 12,
                               ),
                             ),
-                            child: const Text("ยกเลิก",
-                                style: TextStyle(fontSize: 16)),
+                            child: const Text(
+                              "ยกเลิก",
+                              style: TextStyle(fontSize: 16),
+                            ),
                           ),
                           FilledButton(
                             onPressed: _busy ? null : DrawReward,
@@ -255,14 +272,17 @@ class _RewardActionBarState extends State<RewardActionBar> {
                                 vertical: 12,
                               ),
                             ),
-                            child: const Text("ยืนยัน",
-                                style: TextStyle(fontSize: 16)),
+                            child: const Text(
+                              "ยืนยัน",
+                              style: TextStyle(fontSize: 16),
+                            ),
                           ),
                         ],
                       );
                     },
                   );
                 },
+
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -304,15 +324,18 @@ class _RewardActionBarState extends State<RewardActionBar> {
                         "เมื่อตกลงแล้วจะไม่สามารถแก้ไขได้\nข้อมูลทั้งหมดจะถูกลบ ยกเว้น admin",
                       ),
                       actionsPadding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 12),
+                        horizontal: 8,
+                        vertical: 12,
+                      ),
                       actionsAlignment: MainAxisAlignment.spaceEvenly,
                       actions: [
                         Row(
                           children: [
                             Expanded(
                               child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
                                 child: ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.red,
@@ -325,8 +348,9 @@ class _RewardActionBarState extends State<RewardActionBar> {
                             ),
                             Expanded(
                               child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
                                 child: ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.blue,
@@ -369,32 +393,35 @@ class _RewardActionBarState extends State<RewardActionBar> {
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                                content: Text("รีเซ็ตระบบสำเร็จ และรีเฟรชข้อมูลแล้ว")),
+                              content: Text(
+                                "รีเซ็ตระบบสำเร็จ และรีเฟรชข้อมูลแล้ว",
+                              ),
+                            ),
                           );
                         }
                       } else {
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                                content:
-                                    Text("รีเซ็ตไม่สำเร็จ: ${data['message']}")),
+                              content: Text(
+                                "รีเซ็ตไม่สำเร็จ: ${data['message']}",
+                              ),
+                            ),
                           );
                         }
                       }
                     } else {
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content:
-                                  Text("Error: ${resp.statusCode}")),
+                          SnackBar(content: Text("Error: ${resp.statusCode}")),
                         );
                       }
                     }
                   } catch (e) {
                     if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Exception: $e")),
-                      );
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text("Exception: $e")));
                     }
                   } finally {
                     if (mounted) setState(() => _busy = false);
@@ -413,6 +440,80 @@ class _RewardActionBarState extends State<RewardActionBar> {
           ),
         ),
       ],
+    );
+  }
+
+  Future<bool> _isRewardAlreadyDrawn() async {
+    try {
+      final config = await Configuration.getConfig();
+      final api = config['apiEndpoint'];
+      final uri = Uri.parse('$api/api/lottos/results');
+
+      final res = await http.get(
+        uri,
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Authorization": "Bearer ${widget.currentUser.token}",
+        },
+      );
+
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        final body = jsonDecode(utf8.decode(res.bodyBytes));
+
+        // โครงสร้างแบบ List และมีข้อมูล → ถือว่าออกรางวัลแล้ว
+        if (body is List && body.isNotEmpty) return true;
+
+        // โครงสร้างแบบ Map → พยายามเดา field ทั่วไป
+        if (body is Map<String, dynamic>) {
+          if (body['results'] is List && (body['results'] as List).isNotEmpty)
+            return true;
+          if (body['data'] is List && (body['data'] as List).isNotEmpty)
+            return true;
+          if (body['isClosed'] == true ||
+              body['closed'] == true ||
+              body['hasResult'] == true) {
+            return true;
+          }
+        }
+        return false; // ยังไม่พบหลักฐานว่าปิดรอบ
+      }
+
+      return false; // สถานะอื่น ๆ → อย่าบล็อกผิดพลาด
+    } catch (_) {
+      return false; // เช็คไม่ได้ → อย่าบล็อก
+    }
+  }
+
+  void _showAlreadyDrawnDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: Color(0xFF2196F3), width: 1.5),
+        ),
+        title: const Text("ไม่สามารถสุ่มรางวัลได้"),
+        content: const Text(
+          "มีการออกรางวัลล็อตโต้แล้ว\nโปรดรีเซ็ตระบบเพื่อจำลองใหม่อีกรอบ",
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF2196F3),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+            ),
+            child: const Text("ปิด", style: TextStyle(fontSize: 16)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -442,13 +543,16 @@ class _RewardActionBarState extends State<RewardActionBar> {
     } on TimeoutException {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('การเชื่อมต่อล่าช้า กรุณาลองใหม่อีกครั้ง')),
+        const SnackBar(
+          content: Text('การเชื่อมต่อล่าช้า กรุณาลองใหม่อีกครั้ง'),
+        ),
       );
     } catch (e) {
       log('DrawReward error: $e');
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('เกิดข้อผิดพลาด: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('เกิดข้อผิดพลาด: $e')));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
